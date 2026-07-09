@@ -32,23 +32,22 @@ RANDOM_SEED: int = 42
 # --------------------------------------------------------------------------- #
 # Schema: the unit of observation is a (query, URL) pair.
 # --------------------------------------------------------------------------- #
-TARGET: str = "cited"          # 1 if the URL was cited in the AI Overview, else 0
-GROUP_COL: str = "query_id"    # rows are grouped by query for leakage-safe CV
-ID_COLS: list[str] = ["query_id", "query", "url"]
+TARGET: str = "cited"  # 1 if the URL was cited in the AI Overview, else 0
+GROUP_COL: str = "query_id"  # rows are grouped by query for leakage-safe CV
 
 # Numeric features fed directly to the model. Some are raw signals from the
 # SERP / crawl; a few are engineered in features.py (rank_reciprocal,
 # structure_score).
 NUMERIC_FEATURES: list[str] = [
     "organic_rank",
-    "rank_reciprocal",          # engineered: 1 / organic_rank
+    "rank_reciprocal",  # engineered: 1 / organic_rank
     "domain_rating",
     "page_authority",
     "word_count",
     "has_schema",
     "num_lists_tables",
     "has_faq",
-    "structure_score",          # engineered: schema + faq + list/table density
+    "structure_score",  # engineered: schema + faq + list/table density
     "query_url_similarity",
     "passage_match_score",
     "content_freshness_days",

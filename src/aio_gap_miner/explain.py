@@ -43,7 +43,9 @@ def _numeric_display(X: pd.DataFrame) -> pd.DataFrame:
     return disp
 
 
-def mean_abs_importance(shap_values: np.ndarray, feature_names: list[str]) -> pd.DataFrame:
+def mean_abs_importance(
+    shap_values: np.ndarray, feature_names: list[str]
+) -> pd.DataFrame:
     """Global feature importance = mean(|SHAP|), sorted descending."""
     imp = np.abs(shap_values).mean(axis=0)
     return (
@@ -53,8 +55,9 @@ def mean_abs_importance(shap_values: np.ndarray, feature_names: list[str]) -> pd
     )
 
 
-def plot_beeswarm(shap_values: np.ndarray, X: pd.DataFrame,
-                  save_path: str | Path | None = None):
+def plot_beeswarm(
+    shap_values: np.ndarray, X: pd.DataFrame, save_path: str | Path | None = None
+):
     """SHAP beeswarm summary: direction and magnitude of every feature."""
     plt.figure()
     shap.summary_plot(shap_values, _numeric_display(X), show=False, plot_size=(8, 6))
@@ -65,12 +68,14 @@ def plot_beeswarm(shap_values: np.ndarray, X: pd.DataFrame,
     return fig
 
 
-def plot_importance_bar(shap_values: np.ndarray, X: pd.DataFrame,
-                        save_path: str | Path | None = None):
+def plot_importance_bar(
+    shap_values: np.ndarray, X: pd.DataFrame, save_path: str | Path | None = None
+):
     """Bar chart of mean(|SHAP|) global importance."""
     plt.figure()
-    shap.summary_plot(shap_values, _numeric_display(X), plot_type="bar",
-                      show=False, plot_size=(8, 6))
+    shap.summary_plot(
+        shap_values, _numeric_display(X), plot_type="bar", show=False, plot_size=(8, 6)
+    )
     fig = plt.gcf()
     fig.suptitle("Global feature importance (mean |SHAP|)", y=1.02, fontsize=11)
     if save_path:
@@ -78,13 +83,16 @@ def plot_importance_bar(shap_values: np.ndarray, X: pd.DataFrame,
     return fig
 
 
-def plot_dependence(shap_values: np.ndarray, X: pd.DataFrame, feature: str,
-                    save_path: str | Path | None = None):
+def plot_dependence(
+    shap_values: np.ndarray,
+    X: pd.DataFrame,
+    feature: str,
+    save_path: str | Path | None = None,
+):
     """SHAP dependence plot for a single feature (shows its response curve)."""
     disp = _numeric_display(X)
     plt.figure(figsize=(6.5, 5))
-    shap.dependence_plot(feature, shap_values, disp, show=False,
-                         interaction_index=None)
+    shap.dependence_plot(feature, shap_values, disp, show=False, interaction_index=None)
     fig = plt.gcf()
     if save_path:
         fig.savefig(save_path, dpi=140, bbox_inches="tight")

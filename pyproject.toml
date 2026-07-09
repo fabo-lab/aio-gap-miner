@@ -9,7 +9,7 @@ description = "Supervised, explainable prediction of which URLs get cited in Goo
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Fabian" }]
+authors = [{ name = "Fabian Pott" }]
 keywords = ["seo", "geo", "aio", "ai-overviews", "machine-learning", "shap", "lightgbm"]
 
 dependencies = [
@@ -26,10 +26,26 @@ dependencies = [
 
 [project.optional-dependencies]
 notebook = ["jupyter", "nbformat", "nbconvert", "ipykernel"]
-dev = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "ruff>=0.6", "deptry>=0.20", "pre-commit>=3.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# E/F = pycodestyle + pyflakes, I = isort, UP = pyupgrade, B = flake8-bugbear
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]  # line length is handled by the formatter
+
+[tool.deptry]
+known_first_party = ["aio_gap_miner"]
+
+[tool.deptry.per_rule_ignores]
+# Dev / notebook tooling used via the CLI, not imported in package code.
+DEP002 = ["jupyter", "nbconvert", "ipykernel", "pytest"]

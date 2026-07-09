@@ -50,8 +50,12 @@ from aio_gap_miner.stats import (
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data", type=str, default=None,
-                        help="Path to a CSV; defaults to the synthetic sample.")
+    parser.add_argument(
+        "--data",
+        type=str,
+        default=None,
+        help="Path to a CSV; defaults to the synthetic sample.",
+    )
     args = parser.parse_args()
 
     config.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
@@ -60,15 +64,26 @@ def main() -> None:
     df_csv = load_dataset(args.data)
     engine = build_database(df_csv)
     df = load_candidates(engine)
-    print(f"     {len(df):,} rows | {df[config.GROUP_COL].nunique():,} queries "
-          f"| {df[config.TARGET].mean():.1%} positive")
+    print(
+        f"     {len(df):,} rows | {df[config.GROUP_COL].nunique():,} queries "
+        f"| {df[config.TARGET].mean():.1%} positive"
+    )
 
     print("2/6  Inferential statistics (cited vs not-cited) ...")
     tests = hypothesis_tests(df)
-    print(tests[["feature", "median_cited", "median_not_cited",
-                 "p_value", "effect_size_r"]].head(6).to_string(index=False))
-    plot_correlation_heatmap(df, save_path=config.FIGURES_DIR / "correlation_heatmap.png")
-    plot_signal_distributions(df, save_path=config.FIGURES_DIR / "signal_distributions.png")
+    print(
+        tests[
+            ["feature", "median_cited", "median_not_cited", "p_value", "effect_size_r"]
+        ]
+        .head(6)
+        .to_string(index=False)
+    )
+    plot_correlation_heatmap(
+        df, save_path=config.FIGURES_DIR / "correlation_heatmap.png"
+    )
+    plot_signal_distributions(
+        df, save_path=config.FIGURES_DIR / "signal_distributions.png"
+    )
 
     print("3/6  Building features ...")
     X, y, groups = build_xy(df)
@@ -79,16 +94,24 @@ def main() -> None:
     print(f"     LightGBM PR-AUC = {cv.mean_ap:.4f} +/- {cv.std_ap:.4f}")
 
     print("5/6  Evaluation vs baselines ...")
-    comparison = compare_models(df, {
-        "Gap-Miner (LightGBM)": cv.oof_pred,
-        "Logistic Regression": oof_lr,
-    }, groups)
+    comparison = compare_models(
+        df,
+        {
+            "Gap-Miner (LightGBM)": cv.oof_pred,
+            "Logistic Regression": oof_lr,
+        },
+        groups,
+    )
     print(comparison.to_string())
 
     summary = evaluation_summary(df, cv.oof_pred)
     plot_pr_curves(df, cv.oof_pred, save_path=config.FIGURES_DIR / "pr_curve.png")
-    plot_confusion(df, cv.oof_pred, threshold=summary["best_f1_threshold"],
-                   save_path=config.FIGURES_DIR / "confusion_matrix.png")
+    plot_confusion(
+        df,
+        cv.oof_pred,
+        threshold=summary["best_f1_threshold"],
+        save_path=config.FIGURES_DIR / "confusion_matrix.png",
+    )
 
     print("6/6  Final model + SHAP ...")
     final_model = train_final_model(X, y, n_estimators=int(np.mean(cv.best_iterations)))
@@ -99,9 +122,15 @@ def main() -> None:
         print(f"       {row['feature']:24s} {row['mean_abs_shap']:.4f}")
 
     plot_beeswarm(shap_values, X, save_path=config.FIGURES_DIR / "shap_summary.png")
-    plot_importance_bar(shap_values, X, save_path=config.FIGURES_DIR / "shap_importance.png")
-    plot_dependence(shap_values, X, importance.iloc[0]["feature"],
-                    save_path=config.FIGURES_DIR / "shap_dependence.png")
+    plot_importance_bar(
+        shap_values, X, save_path=config.FIGURES_DIR / "shap_importance.png"
+    )
+    plot_dependence(
+        shap_values,
+        X,
+        importance.iloc[0]["feature"],
+        save_path=config.FIGURES_DIR / "shap_dependence.png",
+    )
 
     payload = {
         "cv_pr_auc_mean": cv.mean_ap,

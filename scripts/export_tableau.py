@@ -15,7 +15,6 @@ import matplotlib
 
 matplotlib.use("Agg")
 import numpy as np
-import pandas as pd
 
 from aio_gap_miner import config
 from aio_gap_miner.data import load_dataset

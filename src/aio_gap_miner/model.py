@@ -24,8 +24,8 @@ from . import config
 class CVResult:
     """Container for cross-validation outputs."""
 
-    oof_pred: np.ndarray                       # out-of-fold predicted probabilities
-    fold_ap: list[float] = field(default_factory=list)   # per-fold average precision
+    oof_pred: np.ndarray  # out-of-fold predicted probabilities
+    fold_ap: list[float] = field(default_factory=list)  # per-fold average precision
     models: list[lgb.LGBMClassifier] = field(default_factory=list)
     best_iterations: list[int] = field(default_factory=list)
 
@@ -92,11 +92,15 @@ def run_group_kfold_cv(
         ap = average_precision_score(y_va, proba)
         result.fold_ap.append(float(ap))
         result.models.append(model)
-        result.best_iterations.append(int(model.best_iteration_ or params["n_estimators"]))
+        result.best_iterations.append(
+            int(model.best_iteration_ or params["n_estimators"])
+        )
 
         if verbose:
-            print(f"  fold {fold + 1}/{n_splits}  PR-AUC = {ap:.4f}  "
-                  f"(best_iter={model.best_iteration_})")
+            print(
+                f"  fold {fold + 1}/{n_splits}  PR-AUC = {ap:.4f}  "
+                f"(best_iter={model.best_iteration_})"
+            )
 
     return result
 
@@ -135,14 +139,24 @@ def _build_logreg_pipeline():
     pre = ColumnTransformer(
         transformers=[
             ("num", StandardScaler(), config.NUMERIC_FEATURES),
-            ("cat", OneHotEncoder(handle_unknown="ignore"), config.CATEGORICAL_FEATURES),
+            (
+                "cat",
+                OneHotEncoder(handle_unknown="ignore"),
+                config.CATEGORICAL_FEATURES,
+            ),
         ]
     )
     return Pipeline(
         steps=[
             ("pre", pre),
-            ("clf", LogisticRegression(max_iter=1000, class_weight="balanced",
-                                       random_state=config.RANDOM_SEED)),
+            (
+                "clf",
+                LogisticRegression(
+                    max_iter=1000,
+                    class_weight="balanced",
+                    random_state=config.RANDOM_SEED,
+                ),
+            ),
         ]
     )
 
@@ -159,8 +173,6 @@ def run_logreg_group_kfold_cv(
     apples-to-apples. Categorical columns are cast to string so the one-hot
     encoder handles them cleanly.
     """
-    from sklearn.metrics import average_precision_score
-
     X_lr = X.copy()
     for col in config.CATEGORICAL_FEATURES:
         X_lr[col] = X_lr[col].astype(str)
@@ -171,5 +183,4 @@ def run_logreg_group_kfold_cv(
         pipe = _build_logreg_pipeline()
         pipe.fit(X_lr.iloc[tr_idx], y.iloc[tr_idx])
         oof[va_idx] = pipe.predict_proba(X_lr.iloc[va_idx])[:, 1]
-    _ = average_precision_score  # (kept explicit for readers; scoring done in evaluate)
     return oof

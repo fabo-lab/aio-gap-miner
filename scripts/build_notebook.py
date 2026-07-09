@@ -16,8 +16,15 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "notebooks" / "01_gap_miner_baseline.ipynb"
 
 cells = []
-def md(t): cells.append(new_markdown_cell(t.strip("\n")))
-def code(t): cells.append(new_code_cell(t.strip("\n")))
+
+
+def md(t):
+    cells.append(new_markdown_cell(t.strip("\n")))
+
+
+def code(t):
+    cells.append(new_code_cell(t.strip("\n")))
+
 
 # --------------------------------------------------------------------------- #
 md(r"""
@@ -104,9 +111,11 @@ read_sql(QUERY_CITATION_RATE_BY_CONTENT_TYPE, engine)
 """)
 
 md("## 3 — Exploratory data analysis")
-md("### 3.1 Class balance and candidates per query\n"
-   "Citation is rare and query-relative — the regime where PR-AUC is the honest "
-   "metric.")
+md(
+    "### 3.1 Class balance and candidates per query\n"
+    "Citation is rare and query-relative — the regime where PR-AUC is the honest "
+    "metric."
+)
 code(r"""
 per_query = df.groupby(config.GROUP_COL).agg(
     candidates=("url", "size"), cited=(config.TARGET, "sum"))
@@ -151,10 +160,12 @@ code(r"""
 st.descriptive_by_class(df)
 """)
 
-md("## 5 — Feature engineering\n"
-   "`build_xy` adds `rank_reciprocal` (1/rank, the non-linear visibility decay) "
-   "and `structure_score` (a single 'how extractable is this page' signal) and "
-   "casts categoricals to pandas `category` dtype for LightGBM.")
+md(
+    "## 5 — Feature engineering\n"
+    "`build_xy` adds `rank_reciprocal` (1/rank, the non-linear visibility decay) "
+    "and `structure_score` (a single 'how extractable is this page' signal) and "
+    "casts categoricals to pandas `category` dtype for LightGBM."
+)
 code(r"""
 X, y, groups = build_xy(df)
 print("X shape:", X.shape, "| any NaNs:", bool(X.isna().any().any()))
@@ -190,12 +201,14 @@ comparison = ev.compare_models(df, {
 }, groups)
 comparison
 """)
-md("**Read-out.** Both learned models beat the rank-only heuristic by ~10 PR-AUC "
-   "points and lift per-query precision@k. On this synthetic data the label is "
-   "close to linear in the engineered features, so logistic regression is very "
-   "competitive; gradient boosting's edge typically grows with the non-linear "
-   "interactions present in real citation data. LightGBM is carried forward for "
-   "SHAP because tree attributions are exact.")
+md(
+    "**Read-out.** Both learned models beat the rank-only heuristic by ~10 PR-AUC "
+    "points and lift per-query precision@k. On this synthetic data the label is "
+    "close to linear in the engineered features, so logistic regression is very "
+    "competitive; gradient boosting's edge typically grows with the non-linear "
+    "interactions present in real citation data. LightGBM is carried forward for "
+    "SHAP because tree attributions are exact."
+)
 
 md("### 7.1 Precision-Recall curve")
 code(r"""
@@ -209,9 +222,11 @@ ev.plot_confusion(df, cv.oof_pred, threshold=summary["best_f1_threshold"]); plt.
 print(f"Operating threshold: {summary['best_f1_threshold']:.3f} | F1 = {summary['best_f1']:.3f}")
 """)
 
-md("## 8 — Explainability (TreeSHAP)\n"
-   "Why does a URL get cited? Train a final LightGBM on all rows (at the mean "
-   "best CV iteration) and attribute predictions with TreeSHAP.")
+md(
+    "## 8 — Explainability (TreeSHAP)\n"
+    "Why does a URL get cited? Train a final LightGBM on all rows (at the mean "
+    "best CV iteration) and attribute predictions with TreeSHAP."
+)
 code(r"""
 final_model = train_final_model(X, y, n_estimators=int(np.mean(cv.best_iterations)))
 explainer, shap_values = ex.compute_shap_values(final_model, X)
@@ -257,7 +272,11 @@ the strongest SHAP driver per row. The interactive dashboard is built on that
 """)
 
 nb = new_notebook(cells=cells)
-nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
+nb.metadata["kernelspec"] = {
+    "display_name": "Python 3",
+    "language": "python",
+    "name": "python3",
+}
 nb.metadata["language_info"] = {"name": "python"}
 OUT.parent.mkdir(parents=True, exist_ok=True)
 nbf.write(nb, OUT)

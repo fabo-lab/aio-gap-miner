@@ -6,9 +6,6 @@ return sane output, and the two-model comparison beats the rank-only baseline.
 
 from __future__ import annotations
 
-import numpy as np
-
-from aio_gap_miner import config
 from aio_gap_miner.data import EXPECTED_COLUMNS, generate_synthetic_dataset
 from aio_gap_miner.database import build_database, load_candidates, read_sql
 from aio_gap_miner.evaluate import compare_models

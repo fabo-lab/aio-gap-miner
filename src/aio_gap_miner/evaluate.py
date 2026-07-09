@@ -25,12 +25,12 @@ import pandas as pd
 from sklearn.metrics import (
     average_precision_score,
     confusion_matrix,
-    f1_score,
     precision_recall_curve,
     roc_auc_score,
 )
 
 from . import config
+
 
 # --------------------------------------------------------------------------- #
 # Metrics
@@ -173,8 +173,13 @@ def compare_models(
             }
         )
     rows.append(
-        {"model": "Random / prevalence", "pr_auc": round(prevalence(y), 4),
-         "pr_auc_std": 0.0, "roc_auc": 0.5, "precision_at_k": float("nan")}
+        {
+            "model": "Random / prevalence",
+            "pr_auc": round(prevalence(y), 4),
+            "pr_auc_std": 0.0,
+            "roc_auc": 0.5,
+            "precision_at_k": float("nan"),
+        }
     )
     return pd.DataFrame(rows).set_index("model")
 
@@ -191,15 +196,22 @@ def plot_pr_curves(
     y_true = df[config.TARGET].to_numpy()
     fig, ax = plt.subplots(figsize=(6.5, 5))
 
-    for label, score in [("Gap-Miner (LightGBM)", oof_pred),
-                         ("Rank-only baseline", rank_only_score(df))]:
+    for label, score in [
+        ("Gap-Miner (LightGBM)", oof_pred),
+        ("Rank-only baseline", rank_only_score(df)),
+    ]:
         prec, rec, _ = precision_recall_curve(y_true, score)
         ap = average_precision_score(y_true, score)
         ax.plot(rec, prec, linewidth=2, label=f"{label} — AP={ap:.3f}")
 
     base = prevalence(y_true)
-    ax.axhline(base, linestyle="--", color="grey", linewidth=1,
-               label=f"Prevalence floor — {base:.3f}")
+    ax.axhline(
+        base,
+        linestyle="--",
+        color="grey",
+        linewidth=1,
+        label=f"Prevalence floor — {base:.3f}",
+    )
 
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
@@ -237,8 +249,16 @@ def plot_confusion(
     ax.set_title(f"Confusion matrix @ threshold {threshold:.3f}")
     for i in range(2):
         for j in range(2):
-            ax.text(j, i, f"{cm[i, j]:,}", ha="center", va="center",
-                    color="black", fontsize=12, fontweight="bold")
+            ax.text(
+                j,
+                i,
+                f"{cm[i, j]:,}",
+                ha="center",
+                va="center",
+                color="black",
+                fontsize=12,
+                fontweight="bold",
+            )
     fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     fig.tight_layout()
 

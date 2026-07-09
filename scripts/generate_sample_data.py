@@ -24,8 +24,10 @@ def main() -> None:
     path = save_dataset(df, args.out)
 
     pos = int(df["cited"].sum())
-    print(f"Wrote {len(df):,} (query, URL) rows across "
-          f"{df['query_id'].nunique():,} queries to {path}")
+    print(
+        f"Wrote {len(df):,} (query, URL) rows across "
+        f"{df['query_id'].nunique():,} queries to {path}"
+    )
     print(f"Positives (cited): {pos:,}  ({pos / len(df):.1%} positive rate)")
 
 

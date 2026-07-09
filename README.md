@@ -169,6 +169,22 @@ aio-gap-miner/
 `Python · pandas · SQL (SQLAlchemy / SQLite) · seaborn · matplotlib · scipy ·
 scikit-learn · LightGBM · SHAP · Tableau · Git`
 
+## Code quality
+
+Linting, formatting, and dead-code / dependency checks are wired in and pass
+clean:
+
+```bash
+pip install -e ".[dev]"
+ruff check .        # lint (pyflakes, isort, pyupgrade, bugbear) — passes
+ruff format .       # formatting
+deptry .            # unused/missing dependencies — passes
+pre-commit install  # run all checks automatically on every commit
+```
+
+Config lives in `pyproject.toml` (`[tool.ruff]`, `[tool.deptry]`) and
+`.pre-commit-config.yaml`.
+
 ## Feature set
 
 Signals per (query, URL) pair — SERP + on-page crawl:

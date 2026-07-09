@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Standalone ETL step: load the (query, URL) dataset into SQLite via SQLAlchemy.
 
-    python scripts/build_database.py                 # from the synthetic sample
-    python scripts/build_database.py --data data/raw/my_data.csv
+python scripts/build_database.py                 # from the synthetic sample
+python scripts/build_database.py --data data/raw/my_data.csv
 """
 
 from __future__ import annotations

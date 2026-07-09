@@ -33,6 +33,7 @@ def _ensure_engineered(df: pd.DataFrame) -> pd.DataFrame:
         return df
     return engineer_features(df)
 
+
 # The signals we care about testing (a readable subset of the full feature set).
 KEY_SIGNALS: list[str] = [
     "organic_rank",
@@ -94,7 +95,11 @@ def hypothesis_tests(
         )
     out = pd.DataFrame(rows)
     out["abs_effect"] = out["effect_size_r"].abs()
-    return out.sort_values("abs_effect", ascending=False).drop(columns="abs_effect").reset_index(drop=True)
+    return (
+        out.sort_values("abs_effect", ascending=False)
+        .drop(columns="abs_effect")
+        .reset_index(drop=True)
+    )
 
 
 def correlation_matrix(
@@ -115,8 +120,16 @@ def plot_correlation_heatmap(
     """Seaborn heatmap of the feature correlation matrix."""
     corr = correlation_matrix(df, features)
     fig, ax = plt.subplots(figsize=(11, 9))
-    sns.heatmap(corr, cmap="RdBu_r", center=0, annot=False, square=True,
-                linewidths=0.4, cbar_kws={"shrink": 0.7}, ax=ax)
+    sns.heatmap(
+        corr,
+        cmap="RdBu_r",
+        center=0,
+        annot=False,
+        square=True,
+        linewidths=0.4,
+        cbar_kws={"shrink": 0.7},
+        ax=ax,
+    )
     ax.set_title("Feature correlation matrix", fontsize=12)
     fig.tight_layout()
     if save_path:
@@ -135,9 +148,18 @@ def plot_signal_distributions(
     df = _ensure_engineered(df)
     fig, axes = plt.subplots(2, 3, figsize=(15, 8))
     palette = {0: "#7a8b8b", 1: "#d5602e"}
-    for ax, f in zip(axes.ravel(), features):
-        sns.kdeplot(data=df, x=f, hue=target, common_norm=False, fill=True,
-                    alpha=0.4, palette=palette, ax=ax, legend=(ax is axes.ravel()[0]))
+    for ax, f in zip(axes.ravel(), features, strict=False):
+        sns.kdeplot(
+            data=df,
+            x=f,
+            hue=target,
+            common_norm=False,
+            fill=True,
+            alpha=0.4,
+            palette=palette,
+            ax=ax,
+            legend=(ax is axes.ravel()[0]),
+        )
         ax.set_title(f)
         ax.set_xlabel("")
     fig.suptitle("Signal distributions: cited (orange) vs not cited (grey)", y=1.01)

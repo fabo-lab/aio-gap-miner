@@ -97,17 +97,19 @@ def _sample_query_features(rng: np.random.Generator, n: int) -> pd.DataFrame:
         0.05 + 0.4 * (domain_rating / 100) + rng.normal(0, 0.08, n), 0, 1
     )
 
-    word_count = np.clip(
-        rng.normal(1200 + 900 * quality, 600), 150, 6000
-    ).round().astype(int)
+    word_count = (
+        np.clip(rng.normal(1200 + 900 * quality, 600), 150, 6000).round().astype(int)
+    )
 
     has_schema = rng.binomial(1, 0.35 + 0.4 * quality)
     has_faq = rng.binomial(1, 0.20 + 0.35 * quality)
     num_lists_tables = rng.poisson(1 + 4 * quality).clip(0, 20)
 
-    content_freshness_days = np.clip(
-        rng.exponential(scale=220) * (1.3 - 0.6 * quality), 1, 2000
-    ).round().astype(int)
+    content_freshness_days = (
+        np.clip(rng.exponential(scale=220) * (1.3 - 0.6 * quality), 1, 2000)
+        .round()
+        .astype(int)
+    )
 
     num_entities_matched = rng.poisson(3 + 9 * query_url_similarity).clip(0, 40)
     readability_score = np.clip(rng.normal(55 + 15 * quality, 12), 5, 100).round(1)
@@ -206,7 +208,11 @@ def generate_synthetic_dataset(
         cited = np.zeros(n_candidates, dtype=int)
         cited[cited_idx] = 1
 
-        block.insert(0, "url", [f"https://example{q:04d}.com/page-{i}" for i in range(n_candidates)])
+        block.insert(
+            0,
+            "url",
+            [f"https://example{q:04d}.com/page-{i}" for i in range(n_candidates)],
+        )
         block.insert(0, "query", _SEED_QUERIES[q % len(_SEED_QUERIES)])
         block.insert(0, "query_id", f"q{q:04d}")
         block["cited"] = cited
