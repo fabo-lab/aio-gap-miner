@@ -121,6 +121,64 @@ def evaluation_summary(
     }
 
 
+def per_fold_scores(
+    df: pd.DataFrame,
+    score: np.ndarray,
+    groups: pd.Series,
+    n_splits: int = config.N_SPLITS,
+) -> tuple[list[float], list[float]]:
+    """Per-fold PR-AUC and ROC-AUC for an OOF score array, on GroupKFold splits.
+
+    Scoring each validation fold separately avoids the pooling artifact where
+    fold-to-fold probability-scale differences distort a single pooled AUC.
+    """
+    from sklearn.model_selection import GroupKFold
+
+    y = df[config.TARGET].to_numpy()
+    gkf = GroupKFold(n_splits=n_splits)
+    aps, rocs = [], []
+    for _, va in gkf.split(df, y, groups):
+        aps.append(float(average_precision_score(y[va], score[va])))
+        rocs.append(float(roc_auc_score(y[va], score[va])))
+    return aps, rocs
+
+
+def compare_models(
+    df: pd.DataFrame,
+    scores: dict[str, np.ndarray],
+    groups: pd.Series,
+    n_splits: int = config.N_SPLITS,
+) -> pd.DataFrame:
+    """Per-fold model comparison (PR-AUC mean +/- std, ROC-AUC, precision@k).
+
+    ``scores`` maps a model name to its out-of-fold prediction array. The
+    rank-only heuristic and prevalence floor are appended for reference. All
+    models are scored on the *same* GroupKFold splits, so the comparison is
+    apples-to-apples and free of the pooled-OOF scale artifact.
+    """
+    y = df[config.TARGET].to_numpy()
+    all_scores = dict(scores)
+    all_scores["Rank-only heuristic"] = rank_only_score(df)
+
+    rows = []
+    for name, score in all_scores.items():
+        aps, rocs = per_fold_scores(df, score, groups, n_splits)
+        rows.append(
+            {
+                "model": name,
+                "pr_auc": round(float(np.mean(aps)), 4),
+                "pr_auc_std": round(float(np.std(aps)), 4),
+                "roc_auc": round(float(np.mean(rocs)), 4),
+                "precision_at_k": round(precision_at_true_k(df, score), 4),
+            }
+        )
+    rows.append(
+        {"model": "Random / prevalence", "pr_auc": round(prevalence(y), 4),
+         "pr_auc_std": 0.0, "roc_auc": 0.5, "precision_at_k": float("nan")}
+    )
+    return pd.DataFrame(rows).set_index("model")
+
+
 # --------------------------------------------------------------------------- #
 # Plots
 # --------------------------------------------------------------------------- #

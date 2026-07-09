@@ -119,3 +119,57 @@ def train_final_model(
     model = lgb.LGBMClassifier(**params)
     model.fit(X, y)
     return model
+
+
+def _build_logreg_pipeline():
+    """Preprocessing + logistic regression: scale numerics, one-hot categoricals.
+
+    A transparent linear classifier -- the foundational "regression &
+    classification" baseline the tree model has to beat.
+    """
+    from sklearn.compose import ColumnTransformer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+    pre = ColumnTransformer(
+        transformers=[
+            ("num", StandardScaler(), config.NUMERIC_FEATURES),
+            ("cat", OneHotEncoder(handle_unknown="ignore"), config.CATEGORICAL_FEATURES),
+        ]
+    )
+    return Pipeline(
+        steps=[
+            ("pre", pre),
+            ("clf", LogisticRegression(max_iter=1000, class_weight="balanced",
+                                       random_state=config.RANDOM_SEED)),
+        ]
+    )
+
+
+def run_logreg_group_kfold_cv(
+    X: pd.DataFrame,
+    y: pd.Series,
+    groups: pd.Series,
+    n_splits: int = config.N_SPLITS,
+) -> np.ndarray:
+    """GroupKFold CV for the logistic-regression baseline; returns OOF probs.
+
+    Uses the same query-grouped folds as the main model so the comparison is
+    apples-to-apples. Categorical columns are cast to string so the one-hot
+    encoder handles them cleanly.
+    """
+    from sklearn.metrics import average_precision_score
+
+    X_lr = X.copy()
+    for col in config.CATEGORICAL_FEATURES:
+        X_lr[col] = X_lr[col].astype(str)
+
+    gkf = GroupKFold(n_splits=n_splits)
+    oof = np.zeros(len(X_lr), dtype=float)
+    for tr_idx, va_idx in gkf.split(X_lr, y, groups):
+        pipe = _build_logreg_pipeline()
+        pipe.fit(X_lr.iloc[tr_idx], y.iloc[tr_idx])
+        oof[va_idx] = pipe.predict_proba(X_lr.iloc[va_idx])[:, 1]
+    _ = average_precision_score  # (kept explicit for readers; scoring done in evaluate)
+    return oof

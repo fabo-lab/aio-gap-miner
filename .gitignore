@@ -18,6 +18,7 @@ env/
 # (see data/sample/) so the repo runs out of the box.
 data/raw/*
 data/processed/*
+data/*.db
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 

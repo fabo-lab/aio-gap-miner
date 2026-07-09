@@ -8,6 +8,36 @@
     0.5868344544010443,
     0.5510916625684987
   ],
+  "comparison": [
+    {
+      "model": "Gap-Miner (LightGBM)",
+      "pr_auc": 0.5724,
+      "pr_auc_std": 0.0175,
+      "roc_auc": 0.815,
+      "precision_at_k": 0.5909
+    },
+    {
+      "model": "Logistic Regression",
+      "pr_auc": 0.5853,
+      "pr_auc_std": 0.015,
+      "roc_auc": 0.8278,
+      "precision_at_k": 0.6115
+    },
+    {
+      "model": "Rank-only heuristic",
+      "pr_auc": 0.4825,
+      "pr_auc_std": 0.0085,
+      "roc_auc": 0.7572,
+      "precision_at_k": 0.526
+    },
+    {
+      "model": "Random / prevalence",
+      "pr_auc": 0.1712,
+      "pr_auc_std": 0.0,
+      "roc_auc": 0.5,
+      "precision_at_k": NaN
+    }
+  ],
   "n_rows": 7361,
   "n_queries": 400,
   "positive_rate": 0.1711723950550197,
@@ -21,6 +51,73 @@
   "precision_at_true_k_rank": 0.5260178571428571,
   "best_f1_threshold": 0.5002038687188795,
   "best_f1": 0.5229885057471265,
+  "logreg_pr_auc": 0.5853,
+  "hypothesis_tests": [
+    {
+      "feature": "organic_rank",
+      "median_cited": 6.0,
+      "median_not_cited": 12.0,
+      "u_statistic": 1869285.0,
+      "p_value": 3.050402995577639e-182,
+      "effect_size_r": 0.513666768133249
+    },
+    {
+      "feature": "query_url_similarity",
+      "median_cited": 0.6964999999999999,
+      "median_not_cited": 0.544,
+      "u_statistic": 5786873.5,
+      "p_value": 3.8004709752750565e-176,
+      "effect_size_r": -0.5055750683598577
+    },
+    {
+      "feature": "passage_match_score",
+      "median_cited": 0.7324999999999999,
+      "median_not_cited": 0.545,
+      "u_statistic": 5597836.5,
+      "p_value": 6.359496495318818e-144,
+      "effect_size_r": -0.4563931752015673
+    },
+    {
+      "feature": "domain_rating",
+      "median_cited": 70.4,
+      "median_not_cited": 61.4,
+      "u_statistic": 5140274.0,
+      "p_value": 1.629722958228332e-79,
+      "effect_size_r": -0.3373488082879985
+    },
+    {
+      "feature": "structure_score",
+      "median_cited": 0.56,
+      "median_not_cited": 0.48,
+      "u_statistic": 5112760.0,
+      "p_value": 1.1948040416362216e-76,
+      "effect_size_r": -0.3301904709870618
+    },
+    {
+      "feature": "num_entities_matched",
+      "median_cited": 9.0,
+      "median_not_cited": 8.0,
+      "u_statistic": 4848579.0,
+      "p_value": 6.387613481161414e-49,
+      "effect_size_r": -0.2614583089423279
+    },
+    {
+      "feature": "domain_citation_rate",
+      "median_cited": 0.3285,
+      "median_not_cited": 0.295,
+      "u_statistic": 4613143.5,
+      "p_value": 3.8386205931795126e-29,
+      "effect_size_r": -0.20020488444517293
+    },
+    {
+      "feature": "word_count",
+      "median_cited": 1742.5,
+      "median_not_cited": 1575.0,
+      "u_statistic": 4360559.0,
+      "p_value": 5.181021425990954e-14,
+      "effect_size_r": -0.1344897922016428
+    }
+  ],
   "top_features": [
     {
       "feature": "query_url_similarity",
