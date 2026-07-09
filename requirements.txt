@@ -1,0 +1,16 @@
+# Core ML stack (versions this project was built & tested against)
+numpy>=1.26
+pandas>=2.0
+scikit-learn>=1.3
+lightgbm>=4.0
+shap>=0.44
+matplotlib>=3.7
+
+# Notebook execution (optional but needed to run notebooks/01_gap_miner_baseline.ipynb)
+jupyter
+nbformat
+nbconvert
+ipykernel
+
+# Testing
+pytest>=7.0
