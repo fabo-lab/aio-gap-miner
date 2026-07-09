@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aio-gap-miner"
-version = "0.2.0"
+version = "0.3.0"
 description = "Supervised, explainable prediction of which URLs get cited in Google AI Overviews."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,10 +22,15 @@ dependencies = [
     "seaborn>=0.13",
     "scipy>=1.10",
     "SQLAlchemy>=2.0",
+    "requests>=2.31",
+    "beautifulsoup4>=4.12",
+    "lxml>=5.0",
+    "textstat>=0.7",
 ]
 
 [project.optional-dependencies]
 notebook = ["jupyter", "nbformat", "nbconvert", "ipykernel"]
+embeddings = ["sentence-transformers>=2.2"]  # optional: true semantic similarity
 dev = ["pytest>=7.0", "ruff>=0.6", "deptry>=0.20", "pre-commit>=3.0"]
 
 [tool.setuptools.packages.find]
@@ -48,4 +53,5 @@ known_first_party = ["aio_gap_miner"]
 
 [tool.deptry.per_rule_ignores]
 # Dev / notebook tooling used via the CLI, not imported in package code.
-DEP002 = ["jupyter", "nbconvert", "ipykernel", "pytest"]
+# lxml is BeautifulSoup's parser backend -- used at runtime, never imported directly.
+DEP002 = ["jupyter", "nbconvert", "ipykernel", "pytest", "ruff", "deptry", "pre-commit", "lxml"]

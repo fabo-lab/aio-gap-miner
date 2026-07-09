@@ -1,0 +1,24 @@
+# One query per line. Lines starting with # are ignored.
+# Example seed set for the ImmoAnalytica real-estate-valuation niche (DE).
+# Aim for 150-300 informational queries in one niche for a solid first dataset.
+
+immobilienbewertung münchen
+haus bewerten münchen
+eigentumswohnung bewerten münchen
+was ist meine immobilie wert
+verkehrswert immobilie berechnen
+marktwert vs verkehrswert
+bodenrichtwert münchen
+immobilie verkaufen ohne makler
+immobilienbewertung bei erbschaft
+immobilienbewertung bei scheidung
+grundstück bewerten münchen
+was kostet ein wertgutachten
+online immobilienbewertung kostenlos
+ertragswertverfahren erklärung
+sachwertverfahren immobilie
+vergleichswertverfahren immobilie
+energieausweis pflicht verkauf
+spekulationssteuer immobilie
+immobilienpreise münchen entwicklung
+mehrfamilienhaus bewerten

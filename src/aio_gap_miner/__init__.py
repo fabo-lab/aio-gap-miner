@@ -38,7 +38,7 @@ from .model import (
 )
 from .stats import descriptive_by_class, hypothesis_tests
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "config",

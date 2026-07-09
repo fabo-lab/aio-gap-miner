@@ -1,0 +1,102 @@
+{
+  "version": "0.1.20260101",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "tasks": [
+    {
+      "id": "sample-task",
+      "status_code": 20000,
+      "result": [
+        {
+          "keyword": "how to descale an espresso machine",
+          "type": "organic",
+          "se_domain": "google.de",
+          "location_code": 2276,
+          "language_code": "de",
+          "items_count": 6,
+          "items": [
+            {
+              "type": "ai_overview",
+              "rank_group": 1,
+              "rank_absolute": 1,
+              "position": "left",
+              "asynchronous_ai_overview": true,
+              "markdown": "To descale an espresso machine, run a descaling solution through it...",
+              "references": [
+                {
+                  "type": "ai_overview_reference",
+                  "source": "Home Barista",
+                  "domain": "www.home-barista.com",
+                  "url": "https://www.home-barista.com/descaling-guide",
+                  "title": "The Complete Descaling Guide",
+                  "text": "Descale every 2-3 months depending on water hardness."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "source": "Whole Latte Love",
+                  "domain": "www.wholelattelove.com",
+                  "url": "https://www.wholelattelove.com/blogs/articles/how-to-descale",
+                  "title": "How to Descale Your Espresso Machine",
+                  "text": "Use a proper descaling solution, not just vinegar."
+                }
+              ],
+              "items": [
+                {
+                  "type": "ai_overview_element",
+                  "title": "Steps to descale",
+                  "text": "Fill the reservoir with descaling solution and water.",
+                  "references": [
+                    {
+                      "type": "ai_overview_reference",
+                      "source": "Reddit",
+                      "domain": "www.reddit.com",
+                      "url": "https://www.reddit.com/r/espresso/comments/descaling",
+                      "title": "Best way to descale? : r/espresso",
+                      "text": "Community tips on descaling frequency."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "organic",
+              "rank_group": 1,
+              "rank_absolute": 2,
+              "domain": "www.home-barista.com",
+              "title": "The Complete Descaling Guide",
+              "description": "A thorough guide to descaling your espresso machine safely.",
+              "url": "https://www.home-barista.com/descaling-guide"
+            },
+            {
+              "type": "organic",
+              "rank_group": 2,
+              "rank_absolute": 3,
+              "domain": "www.seattlecoffeegear.com",
+              "title": "Espresso Machine Maintenance",
+              "description": "Maintenance tips including descaling and backflushing.",
+              "url": "https://www.seattlecoffeegear.com/maintenance"
+            },
+            {
+              "type": "organic",
+              "rank_group": 3,
+              "rank_absolute": 4,
+              "domain": "www.wholelattelove.com",
+              "title": "How to Descale Your Espresso Machine",
+              "description": "Step-by-step descaling instructions with a proper solution.",
+              "url": "https://www.wholelattelove.com/blogs/articles/how-to-descale"
+            },
+            {
+              "type": "organic",
+              "rank_group": 4,
+              "rank_absolute": 5,
+              "domain": "www.youtube.com",
+              "title": "Descaling Tutorial (Video)",
+              "description": "Watch how to descale step by step.",
+              "url": "https://www.youtube.com/watch?v=abc123"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

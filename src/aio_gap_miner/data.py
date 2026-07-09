@@ -97,18 +97,14 @@ def _sample_query_features(rng: np.random.Generator, n: int) -> pd.DataFrame:
         0.05 + 0.4 * (domain_rating / 100) + rng.normal(0, 0.08, n), 0, 1
     )
 
-    word_count = (
-        np.clip(rng.normal(1200 + 900 * quality, 600), 150, 6000).round().astype(int)
-    )
+    word_count = np.clip(rng.normal(1200 + 900 * quality, 600), 150, 6000).round().astype(int)
 
     has_schema = rng.binomial(1, 0.35 + 0.4 * quality)
     has_faq = rng.binomial(1, 0.20 + 0.35 * quality)
     num_lists_tables = rng.poisson(1 + 4 * quality).clip(0, 20)
 
     content_freshness_days = (
-        np.clip(rng.exponential(scale=220) * (1.3 - 0.6 * quality), 1, 2000)
-        .round()
-        .astype(int)
+        np.clip(rng.exponential(scale=220) * (1.3 - 0.6 * quality), 1, 2000).round().astype(int)
     )
 
     num_entities_matched = rng.poisson(3 + 9 * query_url_similarity).clip(0, 40)
@@ -153,9 +149,7 @@ def _citation_propensity(df: pd.DataFrame, rng: np.random.Generator) -> np.ndarr
     baselines, not hit a perfect score.
     """
     structure = (
-        0.4 * df["has_schema"]
-        + 0.4 * df["has_faq"]
-        + 0.2 * (df["num_lists_tables"].clip(0, 5) / 5)
+        0.4 * df["has_schema"] + 0.4 * df["has_faq"] + 0.2 * (df["num_lists_tables"].clip(0, 5) / 5)
     )
     rank_reciprocal = 1.0 / df["organic_rank"]
 

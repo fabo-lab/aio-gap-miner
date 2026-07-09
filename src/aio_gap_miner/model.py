@@ -92,9 +92,7 @@ def run_group_kfold_cv(
         ap = average_precision_score(y_va, proba)
         result.fold_ap.append(float(ap))
         result.models.append(model)
-        result.best_iterations.append(
-            int(model.best_iteration_ or params["n_estimators"])
-        )
+        result.best_iterations.append(int(model.best_iteration_ or params["n_estimators"]))
 
         if verbose:
             print(

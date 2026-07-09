@@ -72,18 +72,12 @@ def main() -> None:
     print("2/6  Inferential statistics (cited vs not-cited) ...")
     tests = hypothesis_tests(df)
     print(
-        tests[
-            ["feature", "median_cited", "median_not_cited", "p_value", "effect_size_r"]
-        ]
+        tests[["feature", "median_cited", "median_not_cited", "p_value", "effect_size_r"]]
         .head(6)
         .to_string(index=False)
     )
-    plot_correlation_heatmap(
-        df, save_path=config.FIGURES_DIR / "correlation_heatmap.png"
-    )
-    plot_signal_distributions(
-        df, save_path=config.FIGURES_DIR / "signal_distributions.png"
-    )
+    plot_correlation_heatmap(df, save_path=config.FIGURES_DIR / "correlation_heatmap.png")
+    plot_signal_distributions(df, save_path=config.FIGURES_DIR / "signal_distributions.png")
 
     print("3/6  Building features ...")
     X, y, groups = build_xy(df)
@@ -122,9 +116,7 @@ def main() -> None:
         print(f"       {row['feature']:24s} {row['mean_abs_shap']:.4f}")
 
     plot_beeswarm(shap_values, X, save_path=config.FIGURES_DIR / "shap_summary.png")
-    plot_importance_bar(
-        shap_values, X, save_path=config.FIGURES_DIR / "shap_importance.png"
-    )
+    plot_importance_bar(shap_values, X, save_path=config.FIGURES_DIR / "shap_importance.png")
     plot_dependence(
         shap_values,
         X,

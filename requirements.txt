@@ -9,6 +9,12 @@ seaborn>=0.13
 scipy>=1.10
 SQLAlchemy>=2.0
 
+# Real-data collection (DataForSEO SERP + on-page crawl)
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=5.0
+textstat>=0.7
+
 # Notebook execution (optional but needed to run notebooks/01_gap_miner_baseline.ipynb)
 jupyter
 nbformat

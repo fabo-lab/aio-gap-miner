@@ -58,9 +58,7 @@ def main() -> None:
     export["predicted_cited"] = (cv.oof_pred >= thr).astype(int)
     # Citation gap: model says this URL should be cited, but it isn't (yet) --
     # the actionable opportunity for a page you don't own the citation on.
-    export["citation_gap"] = (
-        (export["predicted_cited"] == 1) & (export["cited"] == 0)
-    ).astype(int)
+    export["citation_gap"] = ((export["predicted_cited"] == 1) & (export["cited"] == 0)).astype(int)
     export["top_driver"] = top_feature
     export["top_driver_shap"] = top_value.round(4)
     export["decision_threshold"] = round(thr, 4)

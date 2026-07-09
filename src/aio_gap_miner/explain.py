@@ -43,9 +43,7 @@ def _numeric_display(X: pd.DataFrame) -> pd.DataFrame:
     return disp
 
 
-def mean_abs_importance(
-    shap_values: np.ndarray, feature_names: list[str]
-) -> pd.DataFrame:
+def mean_abs_importance(shap_values: np.ndarray, feature_names: list[str]) -> pd.DataFrame:
     """Global feature importance = mean(|SHAP|), sorted descending."""
     imp = np.abs(shap_values).mean(axis=0)
     return (
@@ -55,9 +53,7 @@ def mean_abs_importance(
     )
 
 
-def plot_beeswarm(
-    shap_values: np.ndarray, X: pd.DataFrame, save_path: str | Path | None = None
-):
+def plot_beeswarm(shap_values: np.ndarray, X: pd.DataFrame, save_path: str | Path | None = None):
     """SHAP beeswarm summary: direction and magnitude of every feature."""
     plt.figure()
     shap.summary_plot(shap_values, _numeric_display(X), show=False, plot_size=(8, 6))

@@ -122,16 +122,42 @@ Run the tests:
 pip install pytest && pytest -q
 ```
 
-### Run on real data
+### Collect real data (DataForSEO + on-page crawl)
 
-Drop a CSV with the columns in `EXPECTED_COLUMNS` (see `src/aio_gap_miner/data.py`)
-into `data/raw/`, then:
+The `collect` module turns a list of queries into labelled training rows in the
+exact schema above. For each query it pulls the Google SERP **and its AI Overview
+citations** from DataForSEO, crawls each candidate URL for content features, and
+scores query↔page similarity. A `(query, URL)` pair is labelled `cited = 1` if
+the URL appears in the AI Overview references.
+
+```bash
+# One-time setup: your own DataForSEO account (pay-per-use, ~$0.003/query)
+export DATAFORSEO_LOGIN="your_login"
+export DATAFORSEO_PASSWORD="your_password"
+
+# Prove the pipeline offline first (no credentials, no network):
+python scripts/collect_real_data.py --dry-run --out data/raw/dryrun.csv
+
+# Collect a real dataset (Germany by default; edit queries.example.txt):
+python scripts/collect_real_data.py --queries queries.example.txt --out data/raw/real.csv
+
+# Train on it — no code changes:
+python scripts/run_pipeline.py --data data/raw/real.csv
+```
+
+Semantic similarity uses TF-IDF out of the box; install the optional
+`sentence-transformers` extra (`pip install -e ".[embeddings]"`) for true
+embeddings. Authority features (`domain_rating`, `page_authority`) have a neutral
+default and a single seam to wire in the Moz or DataForSEO Backlinks API.
+
+### Bring your own CSV
+
+Alternatively, drop any CSV with the columns in `EXPECTED_COLUMNS`
+(see `src/aio_gap_miner/data.py`) into `data/raw/` and point the pipeline at it:
 
 ```bash
 python scripts/run_pipeline.py --data data/raw/your_citation_data.csv
 ```
-
-No code changes — the pipeline is schema-driven.
 
 ---
 
@@ -147,13 +173,18 @@ aio-gap-miner/
 │   ├── stats.py               # descriptive + inferential statistics, seaborn plots
 │   ├── model.py               # GroupKFold CV: LightGBM + Logistic Regression
 │   ├── evaluate.py            # PR-AUC, baselines, precision@k, model comparison, plots
-│   └── explain.py             # TreeSHAP values + plots
+│   ├── explain.py             # TreeSHAP values + plots
+│   └── collect/               # real-data collection (DataForSEO + crawl)
+│       ├── serp.py            #   SERP + AI Overview citations
+│       ├── crawl.py           #   on-page feature extraction
+│       └── pipeline.py        #   semantic/authority features + schema assembly
 ├── notebooks/
 │   └── 01_gap_miner_baseline.ipynb   # the narrative, with embedded outputs
 ├── scripts/
 │   ├── generate_sample_data.py       # build the committed sample
 │   ├── build_database.py             # standalone ETL step
 │   ├── run_pipeline.py               # end-to-end CLI
+│   ├── collect_real_data.py          # DataForSEO + crawl -> labelled dataset
 │   ├── export_tableau.py             # write the Tableau data source
 │   └── build_notebook.py             # regenerate the notebook from source
 ├── tableau/                   # Tableau data source + dashboard spec
@@ -167,7 +198,7 @@ aio-gap-miner/
 ## Tech stack
 
 `Python · pandas · SQL (SQLAlchemy / SQLite) · seaborn · matplotlib · scipy ·
-scikit-learn · LightGBM · SHAP · Tableau · Git`
+scikit-learn · LightGBM · SHAP · DataForSEO · BeautifulSoup · Tableau · Git`
 
 ## Code quality
 
