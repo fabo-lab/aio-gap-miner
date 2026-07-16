@@ -11,6 +11,13 @@ dist/
 venv/
 env/
 
+# Secrets & credentials — NEVER commit these
+.env
+.env.*
+!.env.example
+*.key
+secrets.*
+
 # Jupyter
 .ipynb_checkpoints/
 

@@ -150,6 +150,23 @@ Semantic similarity uses TF-IDF out of the box; install the optional
 embeddings. Authority features (`domain_rating`, `page_authority`) have a neutral
 default and a single seam to wire in the Moz or DataForSEO Backlinks API.
 
+### Credentials & security
+
+**Credentials never live in the code.** The collector reads them from
+environment variables (`DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`), so nothing
+secret is ever committed. Two safe ways to provide them:
+
+- **Shell profile** (most leak-proof): put the `export` lines in `~/.zshrc` /
+  `~/.bashrc`. They live in your home directory, outside the repo — impossible
+  to commit.
+- **`.env` file**: `cp .env.example .env`, fill in your values. `.env` is
+  git-ignored; the script auto-loads it via `python-dotenv`. Only `.env.example`
+  (placeholders) is committed.
+
+Verify before pushing: `git check-ignore .env` should print `.env`, and
+`git status` should never list it. If a key is ever exposed, rotate it in the
+DataForSEO dashboard — git history is permanent.
+
 ### Bring your own CSV
 
 Alternatively, drop any CSV with the columns in `EXPECTED_COLUMNS`

@@ -22,6 +22,15 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+# Load credentials from a local, git-ignored .env if python-dotenv is installed.
+# Falls back silently to real environment variables (e.g. set in your shell).
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 from aio_gap_miner.collect import build_dataset
 
 FIXTURE = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "serp_sample.json"

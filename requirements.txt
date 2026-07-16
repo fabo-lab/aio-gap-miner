@@ -14,6 +14,7 @@ requests>=2.31
 beautifulsoup4>=4.12
 lxml>=5.0
 textstat>=0.7
+python-dotenv>=1.0
 
 # Notebook execution (optional but needed to run notebooks/01_gap_miner_baseline.ipynb)
 jupyter
