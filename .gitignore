@@ -34,3 +34,4 @@ data/*.db
 .idea/
 .vscode/
 *.swp
+!.env.example
