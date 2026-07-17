@@ -1,354 +1,185 @@
 # AIO Gap-Miner
 
-**Predicting — and explaining — which URLs get cited in Google AI Overviews.**
+**A model that predicts which web pages Google picks for its AI Overview answers — and explains why.**
 
-Google's AI Overviews (and ChatGPT, Perplexity, Claude) answer informational
-queries at the top of the page and cite a *handful* of sources. If your URL
-isn't in that citation set, your ranking position barely matters — the click
-never happens. This project trains supervised models over **(query, URL)** pairs
-to predict which candidate URLs get cited, and uses **SHAP** to explain *why* —
-turning "GEO" from folklore into a measurable, auditable signal.
+When you search Google, you often see an **AI Overview** box at the top with a short answer and 2-5 source links. If your page is not one of those links, it doesn't matter how well you rank — most people never scroll down to click your result.
 
-> Data Analytics & AI capstone. The committed sample data is **synthetic** so the
-> whole pipeline runs for anyone with zero data access; real labelled AI Overview
-> citation data plugs into the same schema.
+This project builds a machine learning model that answers two questions for any (search query, web page) pair:
 
-**End-to-end pipeline:** `SQLite / SQLAlchemy ETL → EDA (seaborn) → inferential
-statistics → feature engineering → GroupKFold CV (Logistic Regression + LightGBM)
-→ evaluation → TreeSHAP → Tableau hand-off.`
+1. **Will this page get picked as a source?** (yes / no prediction)
+2. **Why?** (which page features actually matter — using SHAP)
+
+The goal: turn "make my content AI-friendly" from a guess into something you can actually measure.
 
 ---
 
-## The framing (and why each choice)
+## The real result (this is the important part)
 
-The unit of observation is one **(query, URL)** pair — one row per candidate URL
-for a query, labelled `cited = 1` if that URL appeared in the AI Overview
-citation set, else `0`.
+I collected **533 real search queries** (German real-estate topics) through the DataForSEO API, checked which pages Google's AI Overview actually cited, and trained the model on it. This is not a demo with made-up numbers — this is real Google data from real searches.
 
-| Decision | Choice | Why |
+**Before training, I checked the data for problems and found two.** Both are explained below. After fixing them, here are the honest results:
+
+### Variant A — "Among pages that already rank, which get picked?"
+
+(Only pages that show up in Google's normal top results, 4,857 rows)
+
+| Model | PR-AUC | ROC-AUC |
 |---|---|---|
-| Task | Binary classification over (query, URL) pairs | Citation is a per-candidate yes/no |
-| Models | **Logistic Regression** + **LightGBM** | Transparent linear baseline vs non-linear gradient-boosted trees |
-| Validation | **GroupKFold** grouped by `query_id` | Labels are *query-relative* → no query may leak across the train/test split |
-| Metric | **PR-AUC** (average precision) | Positives are rare (~17%) and query-relative; ROC-AUC and accuracy flatter the model |
-| Baseline | **rank-only** heuristic (`1/organic_rank`) | The bar to beat: does learning add anything over "just trust the ranking"? |
-| Explainability | **TreeSHAP** | Exact per-feature attribution — the "why" a black box or a rules engine can't give |
+| **LightGBM (my model)** | **0.583** | 0.760 |
+| Logistic Regression (simple baseline) | 0.442 | 0.670 |
+| Rank-only guess ("just trust the ranking") | 0.369 | 0.617 |
+| Random guessing | 0.291 | 0.500 |
 
-The single most important methodological point is **grouped cross-validation**.
-Because whether a URL is cited depends on the *other* candidates for the same
-query, rows from one query must never sit on both sides of the split. GroupKFold
-on `query_id` guarantees leakage-safe, out-of-fold evaluation, and both models
-are scored on the *same* folds for an apples-to-apples comparison.
+My model beats "just look at the ranking" by **+21 percentage points** of PR-AUC. That means: knowing about the *content* of a page adds real, measurable value on top of knowing its Google rank.
 
----
+![SHAP - what drives citation, ranked pages](https://github.com/fabo-lab/aio-gap-miner/raw/main/reports/figures/shap_importance_variant_A.png)
 
-## Do cited and non-cited URLs actually differ? (inferential statistics)
+### Variant B — "What content makes a page get picked, ignoring rank?"
 
-Before modelling, the A/B-testing question on observational data: treat *cited*
-vs *not cited* as two groups and test where they diverge. Features are skewed and
-non-normal, so we use the **Mann-Whitney U** test and report a rank-biserial
-**effect size** (not just a p-value).
+(Every collected page, including ones that got cited without ranking in the top results, 6,646 rows)
 
-| Signal | Median (cited) | Median (not) | p-value | Effect size |
-|---|---|---|---|---|
-| `organic_rank` | 6.0 | 12.0 | ~1e-182 | 0.51 (large) |
-| `query_url_similarity` | 0.70 | 0.54 | ~1e-176 | 0.51 (large) |
-| `passage_match_score` | 0.73 | 0.55 | ~1e-144 | 0.46 (medium) |
-| `domain_rating` | 70.4 | 61.4 | ~1e-79 | 0.34 (medium) |
-| `structure_score` | 0.56 | 0.48 | ~1e-76 | 0.33 (medium) |
+| Model | PR-AUC | ROC-AUC |
+|---|---|---|
+| **LightGBM (my model)** | **0.770** | 0.770 |
+| Logistic Regression (simple baseline) | 0.658 | 0.666 |
+| Rank-only guess | 0.433 | 0.272 |
+| Random guessing | 0.482 | 0.500 |
 
-Cited URLs rank higher, match the query more closely, and are more structured —
-all significant with meaningful effect sizes.
+![SHAP - what drives citation, content only](https://github.com/fabo-lab/aio-gap-miner/raw/main/reports/figures/shap_importance_variant_B.png)
+
+### The one finding that shows up in both variants
+
+Look at both SHAP charts above — **the same four features come out on top every time**: word count, how well the page matches the search query, readability, and how well specific passages match. That consistency across two different ways of slicing the data is what makes this a real finding, not a fluke.
+
+Full numbers: [`reports/results/`](reports/results). Reproduce it yourself:
+```bash
+python scripts/run_variants.py --data data/raw/real.csv
+```
 
 ---
 
-## Results (synthetic demonstration data)
+## The two problems I found in the data (and fixed) — before training anything
 
-**Read this as a pipeline demonstration, not a finding.** The committed data is
-synthetic, and its label is *generated from the same features the model then
-uses* (a weighted score plus noise — see `_citation_propensity` in `data.py`). So
-the model recovering those signals is true *by construction*: it shows the
-plumbing is correct — leakage-safe CV, honest baselines, working SHAP — not that
-these signals drive real AI Overview citations. The substantive, data-driven
-result lives in the [real-dataset variants](#data-leakage-audit-and-the-two-analysis-variants)
-below.
+Before trusting any model, I checked the raw data for shortcuts the model could cheat with. I found two, and I think this is the most important part of the whole project — catching this *before* presenting fake-looking results.
 
-`400 queries · 7,361 (query, URL) pairs · 17.1% cited` — PR-AUC reported as
-per-fold **mean ± std** on the shared GroupKFold splits. LightGBM's stopping
-iteration is chosen on a *nested*, query-grouped hold-out carved from inside each
-fold, so the outer validation fold is never used to tune the tree count (see
-`model.py`).
+**Problem 1: a label that leaked into a feature.**
+Some cited pages didn't show up in Google's normal top results at all — they got picked by the AI Overview from further down, or from outside the visible list. I had marked those rows with a placeholder rank ("101"). But that placeholder rank only ever appears on pages that *are* cited — so the model could just learn "rank = 101 → cited" and call it a day. That's not a real pattern, that's leakage.
 
-| Model | PR-AUC | ROC-AUC | Precision@k |
-|---|---|---|---|
-| **Gap-Miner (LightGBM)** | 0.567 ± 0.034 | 0.816 | 0.582 |
-| **Logistic Regression** | 0.585 ± 0.033 | 0.828 | 0.616 |
-| Rank-only heuristic | 0.481 ± 0.023 | 0.757 | 0.526 |
-| Random / prevalence | 0.171 | 0.500 | — |
+**Problem 2: a feature computed from the answer itself.**
+I had a feature called "how often does this domain get cited" — but it was calculated *using the same citations I was trying to predict*. For domains that only appear once in the data, this feature was literally identical to the answer.
 
-Both learned models clear a *strong* rank-only heuristic — by ~9 PR-AUC points
-for LightGBM, ~10 for logistic regression — and lift per-query precision@k.
-Because the synthetic label is close to linear in the engineered features,
-logistic regression is very competitive here; gradient boosting's edge typically
-grows with the non-linear interactions present in real citation data. LightGBM is
-carried forward for SHAP because tree attributions are exact.
+**The fix:** I removed both. That's exactly why the two variants above exist — Variant A drops the fake-ranked rows, Variant B drops the leaking rank feature entirely. Both report honest, lower numbers than before the fix — and that's the point. A smaller, true number beats a bigger, fake one.
 
-### SHAP: does the explainer recover the known structure?
+---
 
-![SHAP summary](reports/figures/shap_summary.png)
+## What does this mean for AI Overview optimization (AIO/AEO)?
 
-On synthetic data this is a *sanity check on the explainer*, not evidence about
-the world: TreeSHAP should surface the signals the generator actually used, and
-it does — **query↔passage semantic match**, **content structure** (schema / FAQ /
-lists & tables), and **domain citation history**, on top of ranking position. The
-same SHAP machinery applied to the real-data variants is what turns the GEO
-thesis — *structured, on-topic pages get cited beyond what their SERP position
-predicts* — from folklore into a measurable, auditable claim.
+The practical takeaway, in plain terms:
 
-![Precision-Recall](reports/figures/pr_curve.png)
+- **Ranking is not enough.** Pages get cited that don't even rank in the normal top 10-20 results — being well-written matters on its own.
+- **The content features that matter most are consistent**: page length, how directly the text answers the query, readability, and passage-level match. These beat structural tricks like FAQ schema or table markup, which came out weaker in both variants.
+- Because the model uses SHAP, it doesn't just say "this page will/won't get cited" — it can say **why**, feature by feature, for any single page. That's the difference between a prediction and something you can actually act on.
 
-*(All figures are regenerated by `scripts/run_pipeline.py`.)*
+---
+
+## How the whole pipeline works
+
+```
+Collect real search data (DataForSEO)
+        ↓
+Check page content (crawl + extract features)
+        ↓
+Clean the data, check for leakage
+        ↓
+Train two models: LightGBM (tree-based) + Logistic Regression (simple baseline)
+        ↓
+Evaluate with GroupKFold cross-validation (grouped by search query, so no cheating)
+        ↓
+Explain the winning model with SHAP
+        ↓
+Export results as plots, tables, and a Tableau file
+```
+
+**Why GroupKFold and not normal cross-validation?** Whether a page gets cited depends on which *other* pages are competing for the same query. If rows from the same query ended up split between training and test data, the model could accidentally see the answer. GroupKFold keeps every query's rows together, only ever on one side of the split.
+
+**Why PR-AUC instead of accuracy?** Only a minority of pages get cited (~29-48% depending on the variant). A model that just guesses "not cited" every time would already look "accurate" by doing nothing useful. PR-AUC actually measures how well the model finds the true positives.
 
 ---
 
 ## Quickstart
 
 ```bash
-# 1. Install (editable, src layout)
+# 1. Install
 python -m venv .venv && source .venv/bin/activate
 pip install -e .
 
-# 2. Generate the synthetic sample dataset
+# 2. Try it on a small, made-up example first (no API key needed)
 python scripts/generate_sample_data.py
-
-# 3a. Run the full pipeline (ETL -> stats -> CV -> SHAP; figures to reports/figures/)
 python scripts/run_pipeline.py
 
-# 3b. …or open the narrative notebook
-jupyter lab notebooks/01_gap_miner_baseline.ipynb
-
-# 4. Export the Tableau data source
-python scripts/export_tableau.py
-```
-
-Run the tests:
-
-```bash
+# 3. Run the tests
 pip install pytest && pytest -q
 ```
 
-### Collect real data (DataForSEO + on-page crawl)
-
-The `collect` module turns a list of queries into labelled training rows in the
-exact schema above. For each query it pulls the Google SERP **and its AI Overview
-citations** from DataForSEO, crawls each candidate URL for content features, and
-scores query↔page similarity. A `(query, URL)` pair is labelled `cited = 1` if
-the URL appears in the AI Overview references.
-
-Two files are written per real run: `<out>` (the (query,URL) ML training set,
-including `title`/`snippet`/`crawl_ok` reference columns the model doesn't use)
-and `<out>_meta.csv` (one row per query: SERP feature flags — `has_local_pack`,
-`has_people_also_ask`, etc. — for clustering queries by local/informational/
-transactional intent). Rows are written incrementally as each query completes
-(crash-safe for long batches), and a query whose fetch fails is logged and
-skipped rather than aborting the run. By default, the raw DataForSEO JSON and
-raw HTML of every crawled page are also cached to `<out's folder>/_cache/`
-(git-ignored) — a permanent snapshot, since SERPs change over time and a later
-re-analysis can't otherwise reproduce today's exact data. Disable with
-`--no-cache` if disk space is a concern.
+### Collecting your own real data
 
 ```bash
-# One-time setup: your own DataForSEO account (pay-per-use, ~$0.003/query)
 export DATAFORSEO_LOGIN="your_login"
 export DATAFORSEO_PASSWORD="your_password"
 
-# Prove the pipeline offline first (no credentials, no network):
-python scripts/collect_real_data.py --dry-run --out data/raw/dryrun.csv
+# Put your search queries in a text file, one per line, then:
+python scripts/collect_real_data.py --queries your_queries.txt --out data/raw/real.csv
 
-# Collect a real dataset (Germany by default; edit queries.example.txt):
-python scripts/collect_real_data.py --queries queries.example.txt --out data/raw/real.csv
-
-# Train on it — no code changes:
-python scripts/run_pipeline.py --data data/raw/real.csv
+# Train + evaluate on it, leakage-safe:
+python scripts/run_variants.py --data data/raw/real.csv
 ```
 
-Semantic similarity uses TF-IDF out of the box; install the optional
-`sentence-transformers` extra (`pip install -e ".[embeddings]"`) for true
-embeddings. `domain_rating`/`page_authority` stay a neutral placeholder by design
-(see "Why no backlink-based authority score" below); `domain_citation_rate` is
-the real, empirically-grounded authority signal.
+Credentials go in environment variables or a local `.env` file — never in the code, never committed. See `.env.example`.
 
-### Credentials & security
-
-**Credentials never live in the code.** The collector reads them from
-environment variables (`DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`), so nothing
-secret is ever committed. Two safe ways to provide them:
-
-- **Shell profile** (most leak-proof): put the `export` lines in `~/.zshrc` /
-  `~/.bashrc`. They live in your home directory, outside the repo — impossible
-  to commit.
-- **`.env` file**: `cp .env.example .env`, fill in your values. `.env` is
-  git-ignored; the script auto-loads it via `python-dotenv`. Only `.env.example`
-  (placeholders) is committed.
-
-Verify before pushing: `git check-ignore .env` should print `.env`, and
-`git status` should never list it. If a key is ever exposed, rotate it in the
-DataForSEO dashboard — git history is permanent.
-
-**Real collected data stays private, by the same discipline.** Once you collect
-on your own real query list, that list *and* everything derived from it are
-competitive research, not a generic demo — they're git-ignored, not deleted:
-
-- Real query lists: name them `queries_*.txt` (anything else, e.g.
-  `queries.example.txt`, stays public). `data/raw/*` (including the raw HTML /
-  SERP-JSON cache) is already git-ignored.
-- Real Tableau exports: `python scripts/export_tableau.py --data data/raw/real.csv
-  --out tableau/real_<name>.csv` — the `real_` prefix keeps it private and never
-  collides with the tracked synthetic demo file at the default path.
-- The committed notebook and `reports/figures/*.png` are safe to update with
-  real results and commit: they show aggregate feature importance and metrics,
-  not per-row query/URL detail.
-
-Same verify-before-push habit: `git check-ignore queries_538.txt` (or whatever
-you named it) should print the path.
-
-### Bring your own CSV
-
-Alternatively, drop any CSV with the columns in `EXPECTED_COLUMNS`
-(see `src/aio_gap_miner/data.py`) into `data/raw/` and point the pipeline at it:
-
-```bash
-python scripts/run_pipeline.py --data data/raw/your_citation_data.csv
-```
+**A note on privacy:** real query lists and real collected data are git-ignored on purpose (see `.gitignore`) — they're someone's actual business research, not generic demo data. Only the synthetic example and the code are meant to be public.
 
 ---
 
-## Repository layout
+## Project folder structure
 
 ```
 aio-gap-miner/
-├── src/aio_gap_miner/         # installable package
-│   ├── config.py              # paths, feature lists, LightGBM params (single source of truth)
-│   ├── data.py                # (query, URL) schema, synthetic generator, loaders
-│   ├── database.py            # SQLAlchemy/SQLite ETL + analytical SQL
-│   ├── features.py            # engineered features + model-matrix builder
-│   ├── stats.py               # descriptive + inferential statistics, seaborn plots
-│   ├── model.py               # GroupKFold CV: LightGBM + Logistic Regression
-│   ├── evaluate.py            # PR-AUC, baselines, precision@k, model comparison, plots
-│   ├── explain.py             # TreeSHAP values + plots
-│   └── collect/               # real-data collection (DataForSEO + crawl)
-│       ├── serp.py            #   SERP + AI Overview citations
-│       ├── crawl.py           #   on-page feature extraction
-│       └── pipeline.py        #   semantic/authority features + schema assembly
-├── notebooks/
-│   └── 01_gap_miner_baseline.ipynb   # the narrative, with embedded outputs
+├── src/aio_gap_miner/
+│   ├── config.py          # all settings and feature lists in one place
+│   ├── data.py             # loads data, builds the synthetic example
+│   ├── feature_sets.py     # the leakage fix: defines Variant A and Variant B
+│   ├── features.py         # turns raw columns into the model's input
+│   ├── database.py         # SQL / SQLAlchemy version of the data
+│   ├── stats.py            # statistical tests (is the difference real?)
+│   ├── model.py            # trains LightGBM + Logistic Regression
+│   ├── evaluate.py         # scores models, builds comparison tables
+│   ├── explain.py          # SHAP — explains individual predictions
+│   └── collect/            # pulls real data from DataForSEO + crawls pages
 ├── scripts/
-│   ├── generate_sample_data.py       # build the committed sample
-│   ├── build_database.py             # standalone ETL step
-│   ├── run_pipeline.py               # end-to-end CLI
-│   ├── collect_real_data.py          # DataForSEO + crawl -> labelled dataset
-│   ├── export_tableau.py             # write the Tableau data source
-│   └── build_notebook.py             # regenerate the notebook from source
-├── tableau/                   # Tableau data source + dashboard spec
-├── tests/                     # schema / leakage / ETL / stats / comparison guards
-├── data/sample/               # synthetic sample dataset (committed)
-└── reports/figures/           # generated plots
+│   ├── run_pipeline.py       # run everything on one dataset
+│   ├── run_variants.py       # run both leakage-safe variants (the real analysis)
+│   ├── collect_real_data.py  # build a real dataset from a query list
+│   └── export_tableau.py     # export results for Tableau
+├── reports/
+│   ├── figures/             # all charts, including the SHAP charts above
+│   └── results/             # comparison tables as plain CSV
+├── notebooks/                # the same analysis, walked through step by step
+├── tableau/                  # dashboard data + spec
+└── tests/                    # automated checks (17+ tests, all passing)
 ```
 
 ---
 
 ## Tech stack
 
-`Python · pandas · SQL (SQLAlchemy / SQLite) · seaborn · matplotlib · scipy ·
-scikit-learn · LightGBM · SHAP · DataForSEO · BeautifulSoup · Tableau · Git`
+Python · pandas · scikit-learn · LightGBM · SHAP · SQLAlchemy/SQLite · seaborn · scipy · DataForSEO API · BeautifulSoup · Tableau · Git · pytest
 
-## Code quality
+## What's left to do
 
-Linting, formatting, and dead-code / dependency checks are wired in and pass
-clean:
-
-```bash
-pip install -e ".[dev]"
-ruff check .        # lint: E/F/I/UP/B — passes (notebooks exempt cell idioms, see config)
-ruff format .       # formatting
-deptry .            # unused/missing dependencies — passes
-pre-commit install  # run all checks automatically on every commit
-```
-
-Config lives in `pyproject.toml` (`[tool.ruff]`, plus
-`[tool.ruff.lint.per-file-ignores]` for notebook cell idioms, and
-`[tool.deptry]`) and `.pre-commit-config.yaml`.
-
-## Feature set
-
-Signals per (query, URL) pair — SERP + on-page crawl:
-
-- **Ranking:** `organic_rank`, `rank_reciprocal` *(engineered)*
-- **Authority:** `domain_rating`, `page_authority` *(neutral placeholder by design — see below)*, `domain_citation_rate` *(real signal)*
-- **Relevance:** `query_url_similarity`, `passage_match_score`, `num_entities_matched`
-- **Structure / extractability:** `has_schema`, `has_faq`, `num_lists_tables`, `structure_score` *(engineered)*
-- **Content:** `word_count`, `readability_score`, `content_freshness_days`, `content_type`
-- **Source type:** `is_forum`, `is_video`, `is_https`
-
-## Data-leakage audit and the two analysis variants
-
-Auditing the first real dataset before modelling surfaced label leakage that
-would have made a naive model look great and mean nothing. Documented honestly
-because catching and handling it is the point:
-
-- **`organic_rank == 101`** was a sentinel for cited URLs not in the organic
-  block. Since those URLs are in the data *only because* they were cited, every
-  rank-101 row is `cited = 1` — the feature encodes the label (~27% of rows).
-- **`domain_citation_rate`** is computed from the `cited` label itself; for the
-  572 single-occurrence domains it equals the label exactly. Dropped from the
-  model (reconstructable leakage-free later via out-of-fold encoding).
-- **`domain_rating` / `page_authority`** are a constant placeholder (no signal);
-  dropped for cleanliness.
-
-`scripts/run_variants.py` reports two defensible framings side by side:
-
-| Variant | Question | Setup |
-|---|---|---|
-| **A** | Among pages Google already ranks, which get cited? | rank-101 rows removed, `organic_rank` kept |
-| **B** | What on-page signals distinguish cited pages, independent of rank? | all rows kept, `organic_rank` dropped as a feature |
-
-On the real dataset (533 queries, 6,646 rows), both beat their baselines on
-per-fold GroupKFold PR-AUC, and both surface the *same* top content drivers —
-`word_count`, `query_url_similarity`, `readability_score`, `passage_match_score`
-— which is the robust, honest finding the project set out to test.
-
-```bash
-python scripts/run_variants.py --data data/raw/real.csv        # both variants
-```
-
-## Why no backlink-based authority score
-
-`domain_rating` / `page_authority` are deliberately left as a neutral
-placeholder rather than wired to a real backlink-based score (Moz, Ahrefs,
-DataForSEO Backlinks `bulk_rank`). These proxies estimate authority from
-backlink-crawl coverage, and that coverage is well documented to vary
-significantly by country and vertical — for a DACH/niche market they'd be a
-noisy approximation at best, presenting a third-party heuristic as if it were
-ground truth. Instead, the model leans on **`domain_citation_rate`**: the
-domain's own empirical citation track record *within the collected data* —
-measured directly against the actual target rather than approximated via a
-generic link-graph score.
-
-A constant placeholder costs nothing: with zero variance across rows, the
-model and SHAP correctly assign it ~0 importance — it doesn't bias the results,
-it simply contributes no signal, exactly as if the columns were omitted.
-
-## Roadmap
-
-1. **Real labels** — swap the synthetic sample for a labelled AI Overview
-   citation set (same schema).
-2. **Richer features** — real embeddings for query↔passage similarity, NER-based
-   entity coverage, SERP-feature flags, Core Web Vitals.
-3. **Probability calibration** — isotonic/Platt on top of the ranker for an
-   absolute "citation likelihood" score.
-4. **Gap reports** — per-page SHAP turns the model into a prescriptive tool: for a
-   citation you *don't* hold, it names the specific levers (add FAQ schema,
-   tighten the answer passage, raise topical coverage) to close the gap.
+- Cluster the queries by intent (local vs. informational vs. transactional) using the SERP-feature data already collected
+- Add a real domain-authority signal from DataForSEO's own backlink data (currently a neutral placeholder — explained in the code)
+- Connect the collected data to a proper SQL database with dbt for repeatable, tested transformations
+- Turn per-page SHAP into a "gap report": for any page that *isn't* cited yet, list the specific things to fix
 
 ## License
 
