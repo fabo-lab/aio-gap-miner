@@ -11,11 +11,21 @@ on-page crawl for content features.
 from __future__ import annotations
 
 from .crawl import extract_onpage_features, fetch_html
-from .pipeline import authority_features, build_dataset, entity_overlap, semantic_scores
+from .keywords import expand_seeds, fetch_keyword_suggestions
+from .pipeline import (
+    authority_features,
+    build_dataset,
+    collect_query,
+    entity_overlap,
+    finalise_dataset,
+    semantic_scores,
+)
 from .serp import DataForSEOClient, SerpResult, parse_serp
 
 __all__ = [
     "build_dataset",
+    "collect_query",
+    "finalise_dataset",
     "DataForSEOClient",
     "SerpResult",
     "parse_serp",
@@ -24,4 +34,6 @@ __all__ = [
     "semantic_scores",
     "entity_overlap",
     "authority_features",
+    "expand_seeds",
+    "fetch_keyword_suggestions",
 ]

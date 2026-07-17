@@ -18,6 +18,16 @@ env/
 *.key
 secrets.*
 
+# Real query lists are personal/business research (competitive keyword data) --
+# keep private. The illustrative example stays public.
+queries_*.txt
+!queries.example.txt
+
+# Tableau exports of REAL data (per-row query/URL detail) stay private -- ALWAYS
+# export real-data runs to a "real_"-prefixed filename (see README), never onto
+# the tracked synthetic demo file, so this pattern can never accidentally un-ignore it.
+tableau/real_*.csv
+
 # Jupyter
 .ipynb_checkpoints/
 
@@ -34,4 +44,3 @@ data/*.db
 .idea/
 .vscode/
 *.swp
-!.env.example

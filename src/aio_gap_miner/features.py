@@ -37,23 +37,41 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def build_xy(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.Series]:
+def build_xy(
+    df: pd.DataFrame,
+    numeric_features: list[str] | None = None,
+    categorical_features: list[str] | None = None,
+) -> tuple[pd.DataFrame, pd.Series, pd.Series]:
     """Build the model matrix, target, and group vector.
 
     Categorical columns are cast to pandas ``category`` dtype so LightGBM can
     consume them natively (no one-hot encoding).
 
+    By default the full ``config.FEATURES`` set is used (backwards compatible).
+    Pass explicit ``numeric_features`` / ``categorical_features`` to model a
+    leakage-safe variant (see ``feature_sets.py``) -- e.g. variant B drops
+    ``organic_rank``, and both variants drop the leaky ``domain_citation_rate``
+    and the dead authority placeholders.
+
     Returns
     -------
     (X, y, groups)
-        ``X`` -- feature matrix (``config.FEATURES`` columns)
+        ``X`` -- feature matrix
         ``y`` -- target (``config.TARGET``)
         ``groups`` -- group labels (``config.GROUP_COL``) for GroupKFold
     """
     engineered = engineer_features(df)
 
-    X = engineered[config.FEATURES].copy()
-    for col in config.CATEGORICAL_FEATURES:
+    if numeric_features is None and categorical_features is None:
+        numeric_features = config.NUMERIC_FEATURES
+        categorical_features = config.CATEGORICAL_FEATURES
+    else:
+        numeric_features = numeric_features or []
+        categorical_features = categorical_features or []
+
+    all_features = list(numeric_features) + list(categorical_features)
+    X = engineered[all_features].copy()
+    for col in categorical_features:
         X[col] = X[col].astype("category")
 
     y = engineered[config.TARGET].astype(int)

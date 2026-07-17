@@ -16,9 +16,10 @@ set that up for the strongest ``query_url_similarity`` signal.
 
 from __future__ import annotations
 
-import os
+import json
 import re
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -27,7 +28,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from ..data import EXPECTED_COLUMNS
 from .crawl import PageContent, extract_onpage_features, fetch_html
-from .serp import Candidate, DataForSEOClient, SerpResult, load_serp_fixture
+from .serp import SERP_FEATURE_TYPES, Candidate, DataForSEOClient, SerpResult, load_serp_fixture
 
 # --------------------------------------------------------------------------- #
 # Semantic similarity (TF-IDF default, sentence-transformers if available)
@@ -102,16 +103,20 @@ def entity_overlap(query: str, page_text: str) -> int:
 def authority_features(domain: str) -> tuple[float, float]:
     """Return (domain_rating, page_authority) in [0, 100].
 
-    If ``MOZ_TOKEN`` is set you can wire the Moz Links API call here; otherwise
-    neutral defaults are returned so the pipeline still runs. DataForSEO's
-    Backlinks API (bulk_ranks) is an equally good source to plug in.
+    Deliberately NOT wired to a real backlink-based authority score (Moz,
+    Ahrefs, DataForSEO Backlinks bulk_rank, etc.). These proxies are estimates
+    built on backlink-crawl coverage that varies significantly by country and
+    vertical -- for a DACH/niche market they'd be noisy at best. Rather than
+    present a third-party heuristic as if it were ground truth, this pipeline
+    leans on ``domain_citation_rate`` instead: the domain's own empirical
+    citation track record in the collected data, measured directly against the
+    actual target rather than approximated via a generic link-graph score.
+
+    A constant placeholder costs nothing: with zero variance across rows, both
+    the model and SHAP correctly assign it ~0 importance -- it doesn't bias
+    results, it simply contributes no signal, same as omitting it.
     """
-    if os.environ.get("MOZ_TOKEN"):
-        # TODO: call the Moz Links API here with your token and return
-        # (domain_authority, page_authority). Kept as a single seam so the
-        # rest of the pipeline is provider-agnostic.
-        pass
-    return 50.0, 50.0  # neutral placeholder
+    return 50.0, 50.0  # neutral placeholder, by design -- see docstring above
 
 
 # --------------------------------------------------------------------------- #
@@ -145,11 +150,24 @@ def _row_from_candidate(query_id: str, query: str, cand: Candidate, page: PageCo
         "is_video": onpage["is_video"],
         "content_type": onpage["content_type"],
         "cited": int(cand.cited),
+        # Extra reference columns (beyond EXPECTED_COLUMNS): not used by the ML
+        # pipeline (build_xy selects only config.FEATURES), kept so you can
+        # manually spot-check rows or re-derive different features later
+        # without re-crawling.
+        "title": cand.title,
+        "snippet": cand.snippet,
+        "crawl_ok": int(page.ok),
     }
 
 
-def _finalise(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute cross-row features and impute missing on-page values."""
+def finalise_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    """Compute cross-row features and impute missing on-page values.
+
+    Public entry point (also used by the CLI for incremental collection: raw
+    rows are appended to disk per-query as a safety net, then this is applied
+    once at the end over the full accumulated set, since domain_citation_rate
+    is a global aggregate that needs every row to be computed correctly).
+    """
     # Domain-level historical citation rate, computed from this dataset.
     domain = df["url"].str.extract(r"https?://([^/]+)/?", expand=False).fillna("")
     rate = df.assign(_d=domain).groupby("_d")["cited"].transform("mean")
@@ -167,7 +185,12 @@ def _finalise(df: pd.DataFrame) -> pd.DataFrame:
         fill = 0 if pd.isna(default) else default
         df[col] = df[col].fillna(fill)
 
-    return df[EXPECTED_COLUMNS]
+    # Keep EXPECTED_COLUMNS first (stable schema for the ML pipeline), plus any
+    # extra reference columns (title, snippet, crawl_ok) after -- build_xy()
+    # only ever selects config.FEATURES, so extras are inert for modelling but
+    # preserved here for manual review / future re-derivation without re-crawling.
+    extra_cols = [c for c in df.columns if c not in EXPECTED_COLUMNS]
+    return df[EXPECTED_COLUMNS + extra_cols]
 
 
 # --------------------------------------------------------------------------- #
@@ -184,12 +207,33 @@ def collect_query(
     crawl: bool,
     fixture: str | None,
     polite_delay: float,
-) -> list[dict]:
-    """Collect all candidate rows for one query (live API or fixture)."""
+    cache_dir: Path | None = None,
+) -> tuple[list[dict], dict]:
+    """Collect all candidate rows for one query (live API or fixture).
+
+    Returns ``(rows, query_meta)`` -- ``rows`` are (query, URL) candidate rows
+    as before; ``query_meta`` is one row of query-level intent signals (SERP
+    feature types present, AI Overview stats) for clustering queries by intent
+    (local vs informational vs transactional).
+
+    If ``cache_dir`` is given, the raw DataForSEO JSON response and every
+    crawled page's raw HTML are additionally saved under it (``serp_json/`` and
+    ``html/``) -- a permanent local snapshot so future re-analysis (different
+    features, different questions) never needs a re-query or a re-crawl.
+    """
     if fixture is not None:
         serp: SerpResult = load_serp_fixture(fixture, query)
     else:
         raw = client.fetch_serp(query, location_code, language_code)
+        if cache_dir is not None:
+            try:
+                serp_dir = cache_dir / "serp_json"
+                serp_dir.mkdir(parents=True, exist_ok=True)
+                (serp_dir / f"{query_id}.json").write_text(
+                    json.dumps(raw, ensure_ascii=False), encoding="utf-8"
+                )
+            except OSError:
+                pass  # caching is a bonus, never let it break the actual collection
         from .serp import parse_serp
 
         serp = parse_serp(raw, query)
@@ -205,12 +249,31 @@ def collect_query(
                 organic_seen += 1
 
     rows = []
-    for c in kept:
-        page = fetch_html(c.url) if crawl else PageContent(url=c.url, ok=False)
+    for i, c in enumerate(kept):
+        html_cache_path = (
+            cache_dir / "html" / f"{query_id}__{i:02d}.html" if cache_dir is not None else None
+        )
+        page = (
+            fetch_html(c.url, cache_path=html_cache_path)
+            if crawl
+            else PageContent(url=c.url, ok=False)
+        )
         rows.append(_row_from_candidate(query_id, query, c, page))
         if crawl and polite_delay:
             time.sleep(polite_delay)
-    return rows
+
+    query_meta = {
+        "query_id": query_id,
+        "query": query,
+        "num_candidates": len(serp.candidates),
+        "num_organic_results": serp.num_organic_results,
+        "num_cited": sum(1 for c in serp.candidates if c.cited),
+        "ai_overview_present": int(serp.aio_present),
+        "ai_overview_num_references": serp.aio_num_references,
+        "ai_overview_is_async": int(serp.aio_is_async),
+        **{f"has_{feat}": int(feat in serp.serp_features) for feat in SERP_FEATURE_TYPES},
+    }
+    return rows, query_meta
 
 
 def build_dataset(
@@ -223,21 +286,31 @@ def build_dataset(
     fixture: str | None = None,
     polite_delay: float = 1.0,
     verbose: bool = True,
-) -> pd.DataFrame:
+    cache_dir: Path | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Collect a full (query, URL) dataset in the Gap-Miner schema.
 
     Pass ``fixture=<path>`` to run offline against a saved SERP JSON (no API,
     no credentials) -- used by ``--dry-run``. Otherwise DataForSEO credentials
     must be available in the environment.
+
+    Returns
+    -------
+    (candidates_df, query_meta_df)
+        ``candidates_df`` -- one row per (query, URL) pair, the ML training set.
+        ``query_meta_df`` -- one row per query: SERP feature flags (local_pack,
+        people_also_ask, etc.) and AI Overview stats, for clustering queries by
+        intent (local vs informational vs transactional).
     """
     client = None if fixture is not None else DataForSEOClient()
 
     all_rows: list[dict] = []
+    all_meta: list[dict] = []
     for i, q in enumerate(queries):
         qid = f"q{i:04d}"
         if verbose:
             print(f"[{i + 1}/{len(queries)}] {q!r}")
-        rows = collect_query(
+        rows, meta = collect_query(
             q,
             qid,
             client,
@@ -247,10 +320,13 @@ def build_dataset(
             crawl=crawl,
             fixture=fixture,
             polite_delay=polite_delay,
+            cache_dir=cache_dir,
         )
         all_rows.extend(rows)
+        all_meta.append(meta)
 
     df = pd.DataFrame(all_rows)
     if df.empty:
         raise RuntimeError("No rows collected -- check queries / credentials / AIO presence.")
-    return _finalise(df)
+    meta_df = pd.DataFrame(all_meta)
+    return finalise_dataset(df), meta_df

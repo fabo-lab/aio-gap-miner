@@ -130,6 +130,18 @@ citations** from DataForSEO, crawls each candidate URL for content features, and
 scores query↔page similarity. A `(query, URL)` pair is labelled `cited = 1` if
 the URL appears in the AI Overview references.
 
+Two files are written per real run: `<out>` (the (query,URL) ML training set,
+including `title`/`snippet`/`crawl_ok` reference columns the model doesn't use)
+and `<out>_meta.csv` (one row per query: SERP feature flags — `has_local_pack`,
+`has_people_also_ask`, etc. — for clustering queries by local/informational/
+transactional intent). Rows are written incrementally as each query completes
+(crash-safe for long batches), and a query whose fetch fails is logged and
+skipped rather than aborting the run. By default, the raw DataForSEO JSON and
+raw HTML of every crawled page are also cached to `<out's folder>/_cache/`
+(git-ignored) — a permanent snapshot, since SERPs change over time and a later
+re-analysis can't otherwise reproduce today's exact data. Disable with
+`--no-cache` if disk space is a concern.
+
 ```bash
 # One-time setup: your own DataForSEO account (pay-per-use, ~$0.003/query)
 export DATAFORSEO_LOGIN="your_login"
@@ -147,8 +159,9 @@ python scripts/run_pipeline.py --data data/raw/real.csv
 
 Semantic similarity uses TF-IDF out of the box; install the optional
 `sentence-transformers` extra (`pip install -e ".[embeddings]"`) for true
-embeddings. Authority features (`domain_rating`, `page_authority`) have a neutral
-default and a single seam to wire in the Moz or DataForSEO Backlinks API.
+embeddings. `domain_rating`/`page_authority` stay a neutral placeholder by design
+(see "Why no backlink-based authority score" below); `domain_citation_rate` is
+the real, empirically-grounded authority signal.
 
 ### Credentials & security
 
@@ -166,6 +179,23 @@ secret is ever committed. Two safe ways to provide them:
 Verify before pushing: `git check-ignore .env` should print `.env`, and
 `git status` should never list it. If a key is ever exposed, rotate it in the
 DataForSEO dashboard — git history is permanent.
+
+**Real collected data stays private, by the same discipline.** Once you collect
+on your own real query list, that list *and* everything derived from it are
+competitive research, not a generic demo — they're git-ignored, not deleted:
+
+- Real query lists: name them `queries_*.txt` (anything else, e.g.
+  `queries.example.txt`, stays public). `data/raw/*` (including the raw HTML /
+  SERP-JSON cache) is already git-ignored.
+- Real Tableau exports: `python scripts/export_tableau.py --data data/raw/real.csv
+  --out tableau/real_<name>.csv` — the `real_` prefix keeps it private and never
+  collides with the tracked synthetic demo file at the default path.
+- The committed notebook and `reports/figures/*.png` are safe to update with
+  real results and commit: they show aggregate feature importance and metrics,
+  not per-row query/URL detail.
+
+Same verify-before-push habit: `git check-ignore queries_538.txt` (or whatever
+you named it) should print the path.
 
 ### Bring your own CSV
 
@@ -238,11 +268,59 @@ Config lives in `pyproject.toml` (`[tool.ruff]`, `[tool.deptry]`) and
 Signals per (query, URL) pair — SERP + on-page crawl:
 
 - **Ranking:** `organic_rank`, `rank_reciprocal` *(engineered)*
-- **Authority:** `domain_rating`, `page_authority`, `domain_citation_rate`
+- **Authority:** `domain_rating`, `page_authority` *(neutral placeholder by design — see below)*, `domain_citation_rate` *(real signal)*
 - **Relevance:** `query_url_similarity`, `passage_match_score`, `num_entities_matched`
 - **Structure / extractability:** `has_schema`, `has_faq`, `num_lists_tables`, `structure_score` *(engineered)*
 - **Content:** `word_count`, `readability_score`, `content_freshness_days`, `content_type`
 - **Source type:** `is_forum`, `is_video`, `is_https`
+
+## Data-leakage audit and the two analysis variants
+
+Auditing the first real dataset before modelling surfaced label leakage that
+would have made a naive model look great and mean nothing. Documented honestly
+because catching and handling it is the point:
+
+- **`organic_rank == 101`** was a sentinel for cited URLs not in the organic
+  block. Since those URLs are in the data *only because* they were cited, every
+  rank-101 row is `cited = 1` — the feature encodes the label (~27% of rows).
+- **`domain_citation_rate`** is computed from the `cited` label itself; for the
+  572 single-occurrence domains it equals the label exactly. Dropped from the
+  model (reconstructable leakage-free later via out-of-fold encoding).
+- **`domain_rating` / `page_authority`** are a constant placeholder (no signal);
+  dropped for cleanliness.
+
+`scripts/run_variants.py` reports two defensible framings side by side:
+
+| Variant | Question | Setup |
+|---|---|---|
+| **A** | Among pages Google already ranks, which get cited? | rank-101 rows removed, `organic_rank` kept |
+| **B** | What on-page signals distinguish cited pages, independent of rank? | all rows kept, `organic_rank` dropped as a feature |
+
+On the real dataset (533 queries, 6,646 rows), both beat their baselines on
+per-fold GroupKFold PR-AUC, and both surface the *same* top content drivers —
+`word_count`, `query_url_similarity`, `readability_score`, `passage_match_score`
+— which is the robust, honest finding the project set out to test.
+
+```bash
+python scripts/run_variants.py --data data/raw/real.csv        # both variants
+```
+
+## Why no backlink-based authority score
+
+`domain_rating` / `page_authority` are deliberately left as a neutral
+placeholder rather than wired to a real backlink-based score (Moz, Ahrefs,
+DataForSEO Backlinks `bulk_rank`). These proxies estimate authority from
+backlink-crawl coverage, and that coverage is well documented to vary
+significantly by country and vertical — for a DACH/niche market they'd be a
+noisy approximation at best, presenting a third-party heuristic as if it were
+ground truth. Instead, the model leans on **`domain_citation_rate`**: the
+domain's own empirical citation track record *within the collected data* —
+measured directly against the actual target rather than approximated via a
+generic link-graph score.
+
+A constant placeholder costs nothing: with zero variance across rows, the
+model and SHAP correctly assign it ~0 importance — it doesn't bias the results,
+it simply contributes no signal, exactly as if the columns were omitted.
 
 ## Roadmap
 

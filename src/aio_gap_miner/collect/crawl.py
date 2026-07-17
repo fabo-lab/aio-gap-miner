@@ -13,6 +13,7 @@ import json
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
@@ -48,8 +49,13 @@ class PageContent:
     status: int = 0
 
 
-def fetch_html(url: str, timeout: int = 20) -> PageContent:
-    """Fetch a URL's HTML. Never raises -- returns ``ok=False`` on any failure."""
+def fetch_html(url: str, timeout: int = 20, cache_path: Path | None = None) -> PageContent:
+    """Fetch a URL's HTML. Never raises -- returns ``ok=False`` on any failure.
+
+    If ``cache_path`` is given, the raw HTML is also written there on success --
+    a permanent local copy so future feature-extraction changes (or entirely
+    different analyses) never require re-crawling the same page.
+    """
     try:
         resp = requests.get(
             url,
@@ -58,6 +64,12 @@ def fetch_html(url: str, timeout: int = 20) -> PageContent:
             allow_redirects=True,
         )
         ok = resp.status_code == 200 and "text/html" in resp.headers.get("content-type", "")
+        if ok and cache_path is not None:
+            try:
+                cache_path.parent.mkdir(parents=True, exist_ok=True)
+                cache_path.write_text(resp.text, encoding="utf-8", errors="replace")
+            except OSError:
+                pass  # caching is a bonus, never let it break the actual crawl
         return PageContent(url=url, html=resp.text if ok else "", ok=ok, status=resp.status_code)
     except Exception:
         return PageContent(url=url, ok=False, status=0)

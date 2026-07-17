@@ -1,0 +1,5 @@
+model,pr_auc,pr_auc_std,roc_auc,precision_at_k
+LightGBM,0.5826,0.0361,0.7599,0.6516
+Logistic Regression,0.4415,0.0224,0.6696,0.5792
+Rank-only heuristic,0.3692,0.0174,0.6165,0.5997
+Random / prevalence,0.2907,0.0,0.5,

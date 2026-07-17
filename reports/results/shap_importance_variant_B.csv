@@ -1,0 +1,15 @@
+feature,mean_abs_shap
+word_count,0.4160991419019055
+query_url_similarity,0.3634412262606253
+readability_score,0.3536457826377231
+passage_match_score,0.18559796689586125
+content_freshness_days,0.18204091042874743
+num_lists_tables,0.16689514981803868
+num_entities_matched,0.07608081967675484
+structure_score,0.06959673387970579
+is_video,0.039127102874252015
+content_type,0.0363859764564284
+has_faq,0.020881815740946295
+has_schema,0.014235540438061222
+is_forum,0.0
+is_https,0.0

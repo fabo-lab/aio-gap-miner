@@ -1,0 +1,17 @@
+feature,mean_abs_shap
+organic_rank,0.4200016295468773
+word_count,0.323245884117127
+readability_score,0.27601144045509174
+passage_match_score,0.2287214880470132
+query_url_similarity,0.21966276491067474
+content_freshness_days,0.17567827278186793
+num_lists_tables,0.17487844171837783
+structure_score,0.14080990918008937
+rank_reciprocal,0.09402316227964722
+num_entities_matched,0.06545291638290325
+content_type,0.05114208099385073
+is_video,0.028423791536293482
+has_faq,0.015964717099214615
+has_schema,0.012422910168638316
+is_forum,0.0
+is_https,0.0

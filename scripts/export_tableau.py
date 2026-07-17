@@ -6,10 +6,13 @@ actual label, both models' predicted probabilities, a "citation gap" flag, and
 the single strongest SHAP driver per row. This is the data source for the
 Tableau dashboard (see tableau/README.md).
 
-    python scripts/export_tableau.py
+    python scripts/export_tableau.py                          # synthetic sample
+    python scripts/export_tableau.py --data data/raw/real.csv  # real data
 """
 
 from __future__ import annotations
+
+import argparse
 
 import matplotlib
 
@@ -32,9 +35,17 @@ OUT_CSV = OUT_DIR / "aio_gap_miner_tableau.csv"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--data", type=str, default=None, help="Path to a CSV; defaults to the synthetic sample."
+    )
+    parser.add_argument("--out", type=str, default=str(OUT_CSV))
+    args = parser.parse_args()
+
+    out_path = config.PROJECT_ROOT / args.out if not args.out.startswith("/") else args.out
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    df = load_dataset()
+    df = load_dataset(args.data)
     X, y, groups = build_xy(df)
 
     print("Scoring with LightGBM (OOF) ...")
@@ -63,8 +74,8 @@ def main() -> None:
     export["top_driver_shap"] = top_value.round(4)
     export["decision_threshold"] = round(thr, 4)
 
-    export.to_csv(OUT_CSV, index=False)
-    print(f"\nWrote {len(export):,} rows x {export.shape[1]} cols -> {OUT_CSV}")
+    export.to_csv(out_path, index=False)
+    print(f"\nWrote {len(export):,} rows x {export.shape[1]} cols -> {out_path}")
     print(f"Citation gaps flagged: {int(export['citation_gap'].sum()):,}")
     print("Top drivers (row-level frequency):")
     print(export["top_driver"].value_counts().head(6).to_string())

@@ -123,11 +123,12 @@ def train_final_model(
     return model
 
 
-def _build_logreg_pipeline():
+def _build_logreg_pipeline(numeric_cols: list[str], categorical_cols: list[str]):
     """Preprocessing + logistic regression: scale numerics, one-hot categoricals.
 
     A transparent linear classifier -- the foundational "regression &
-    classification" baseline the tree model has to beat.
+    classification" baseline the tree model has to beat. Column lists are passed
+    in (rather than read from config) so it works with any leakage-safe variant.
     """
     from sklearn.compose import ColumnTransformer
     from sklearn.linear_model import LogisticRegression
@@ -136,11 +137,11 @@ def _build_logreg_pipeline():
 
     pre = ColumnTransformer(
         transformers=[
-            ("num", StandardScaler(), config.NUMERIC_FEATURES),
+            ("num", StandardScaler(), numeric_cols),
             (
                 "cat",
                 OneHotEncoder(handle_unknown="ignore"),
-                config.CATEGORICAL_FEATURES,
+                categorical_cols,
             ),
         ]
     )
@@ -172,13 +173,15 @@ def run_logreg_group_kfold_cv(
     encoder handles them cleanly.
     """
     X_lr = X.copy()
-    for col in config.CATEGORICAL_FEATURES:
+    categorical_cols = [c for c in X_lr.columns if str(X_lr[c].dtype) == "category"]
+    numeric_cols = [c for c in X_lr.columns if c not in categorical_cols]
+    for col in categorical_cols:
         X_lr[col] = X_lr[col].astype(str)
 
     gkf = GroupKFold(n_splits=n_splits)
     oof = np.zeros(len(X_lr), dtype=float)
     for tr_idx, va_idx in gkf.split(X_lr, y, groups):
-        pipe = _build_logreg_pipeline()
+        pipe = _build_logreg_pipeline(numeric_cols, categorical_cols)
         pipe.fit(X_lr.iloc[tr_idx], y.iloc[tr_idx])
         oof[va_idx] = pipe.predict_proba(X_lr.iloc[va_idx])[:, 1]
     return oof

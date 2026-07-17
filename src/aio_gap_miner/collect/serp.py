@@ -32,6 +32,27 @@ DATAFORSEO_ENDPOINT = "https://api.dataforseo.com/v3/serp/google/organic/live/ad
 DEFAULT_LOCATION_CODE = 2276
 DEFAULT_LANGUAGE_CODE = "de"
 
+# SERP feature item types DataForSEO returns alongside 'organic' and
+# 'ai_overview'. Presence/absence of these is a query-level intent signal --
+# e.g. local_pack/map strongly indicate local intent, people_also_ask/
+# featured_snippet indicate informational intent. Extracting these costs
+# nothing extra: they're already in the same response we fetch for citations.
+SERP_FEATURE_TYPES: tuple[str, ...] = (
+    "local_pack",
+    "map",
+    "people_also_ask",
+    "knowledge_graph",
+    "featured_snippet",
+    "related_searches",
+    "images",
+    "video",
+    "paid",
+    "top_stories",
+    "shopping",
+    "answer_box",
+    "carousel",
+)
+
 
 def normalize_url(url: str) -> str:
     """Canonicalise a URL for matching (lowercase host, strip trailing slash/fragment)."""
@@ -63,6 +84,12 @@ class SerpResult:
     query: str
     candidates: list[Candidate] = field(default_factory=list)
     aio_present: bool = False
+    # Query-level intent/feature signals -- used to cluster queries (e.g.
+    # local-intent vs informational vs transactional), not to score any one URL.
+    serp_features: set[str] = field(default_factory=set)
+    aio_num_references: int = 0
+    aio_is_async: bool = False
+    num_organic_results: int = 0
 
     @property
     def cited_urls(self) -> set[str]:
@@ -148,7 +175,16 @@ def parse_serp(raw: dict, query: str) -> SerpResult:
         if not url:
             continue
         cited_by_url[normalize_url(url)] = ref
-    result.aio_present = any(it.get("type") == "ai_overview" for it in items)
+
+    aio_items = [it for it in items if it.get("type") == "ai_overview"]
+    result.aio_present = bool(aio_items)
+    result.aio_num_references = len(references)
+    result.aio_is_async = any(it.get("asynchronous_ai_overview") for it in aio_items)
+
+    # Query-level SERP feature signals (local vs informational vs transactional
+    # intent proxies) -- free to extract, already present in this response.
+    result.serp_features = {it.get("type") for it in items if it.get("type") in SERP_FEATURE_TYPES}
+    result.num_organic_results = sum(1 for it in items if it.get("type") == "organic")
 
     # 2) Organic candidates.
     seen: set[str] = set()
