@@ -81,12 +81,12 @@ fold, so the outer validation fold is never used to tune the tree count (see
 
 | Model | PR-AUC | ROC-AUC | Precision@k |
 |---|---|---|---|
-| **Gap-Miner (LightGBM)** | 0.564 ± 0.016 | 0.815 | 0.598 |
-| **Logistic Regression** | 0.585 ± 0.015 | 0.828 | 0.612 |
-| Rank-only heuristic | 0.483 ± 0.009 | 0.757 | 0.526 |
+| **Gap-Miner (LightGBM)** | 0.567 ± 0.034 | 0.816 | 0.582 |
+| **Logistic Regression** | 0.585 ± 0.033 | 0.828 | 0.616 |
+| Rank-only heuristic | 0.481 ± 0.023 | 0.757 | 0.526 |
 | Random / prevalence | 0.171 | 0.500 | — |
 
-Both learned models clear a *strong* rank-only heuristic — by ~8 PR-AUC points
+Both learned models clear a *strong* rank-only heuristic — by ~9 PR-AUC points
 for LightGBM, ~10 for logistic regression — and lift per-query precision@k.
 Because the synthetic label is close to linear in the engineered features,
 logistic regression is very competitive here; gradient boosting's edge typically
