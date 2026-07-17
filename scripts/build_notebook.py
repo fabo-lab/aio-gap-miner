@@ -247,11 +247,15 @@ print("Top driver:", top_feature)
 md(r"""
 ## 9 — Read-out, Tableau hand-off & next steps
 
-**What the method shows (synthetic data).** Both models beat a strong rank-only
-heuristic on PR-AUC and per-query precision@k, and SHAP attributes the edge to
-**semantic passage match, content structure, and domain citation history** —
-signals raw ranking position can't see. That is the GEO thesis made measurable:
-*structured, on-topic pages get cited beyond what their SERP position predicts.*
+**What the method shows (synthetic data).** This run demonstrates the *pipeline*,
+not a finding. The synthetic label is generated from these same features plus
+noise, so both models beating rank-only and SHAP surfacing **semantic passage
+match, content structure, and domain citation history** is true *by
+construction* — it confirms the machinery (leakage-safe CV, honest baselines,
+working SHAP) is correct, not that these signals drive real citations. Applied to
+*real* labelled data, that same machinery is what turns the GEO thesis —
+*structured, on-topic pages get cited beyond what their SERP position predicts* —
+into a measurable, auditable claim.
 
 **Tableau hand-off.** `python scripts/export_tableau.py` writes a flat, scored
 extract (`tableau/aio_gap_miner_tableau.csv`) with both models' probabilities, a

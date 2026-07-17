@@ -6,6 +6,11 @@ same query), rows from one query must never straddle the train/test split.
 ``sklearn.model_selection.GroupKFold`` with ``groups = query_id`` guarantees
 that, and the out-of-fold (OOF) predictions it produces give an honest estimate
 of held-out performance.
+
+Early stopping is done on a *nested*, query-grouped hold-out carved from each
+fold's training rows -- never on the outer validation fold itself -- so the
+reported per-fold PR-AUC is not inflated by choosing the tree count on the same
+data it is scored on.
 """
 
 from __future__ import annotations
@@ -15,7 +20,7 @@ from dataclasses import dataclass, field
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import GroupKFold
+from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 
 from . import config
 
@@ -44,6 +49,7 @@ def run_group_kfold_cv(
     groups: pd.Series,
     params: dict | None = None,
     n_splits: int = config.N_SPLITS,
+    es_fraction: float = 0.2,
     verbose: bool = False,
 ) -> CVResult:
     """Run GroupKFold CV with LightGBM and collect out-of-fold predictions.
@@ -56,6 +62,10 @@ def run_group_kfold_cv(
         LightGBM hyperparameters. Defaults to ``config.LGBM_PARAMS``.
     n_splits:
         Number of CV folds.
+    es_fraction:
+        Fraction of each fold's *training queries* held out (grouped) as the
+        early-stopping set, so the outer validation fold is never used to pick
+        the tree count.
     verbose:
         If True, print per-fold average precision.
 
@@ -71,14 +81,27 @@ def run_group_kfold_cv(
     result = CVResult(oof_pred=oof_pred)
 
     for fold, (tr_idx, va_idx) in enumerate(gkf.split(X, y, groups)):
-        X_tr, X_va = X.iloc[tr_idx], X.iloc[va_idx]
-        y_tr, y_va = y.iloc[tr_idx], y.iloc[va_idx]
+        X_tr_full, X_va = X.iloc[tr_idx], X.iloc[va_idx]
+        y_tr_full, y_va = y.iloc[tr_idx], y.iloc[va_idx]
+        g_tr_full = groups.iloc[tr_idx]
+
+        # Nested, leakage-safe early-stopping split: hold out a fraction of the
+        # *training* queries (grouped) to choose the stopping iteration. The
+        # outer validation fold (X_va) is never seen during fitting or early
+        # stopping, so its PR-AUC is an honest held-out estimate -- not inflated
+        # by tuning the tree count on the very rows it is then scored on.
+        inner = GroupShuffleSplit(
+            n_splits=1, test_size=es_fraction, random_state=config.RANDOM_SEED
+        )
+        in_tr, in_es = next(inner.split(X_tr_full, y_tr_full, g_tr_full))
+        X_tr, X_es = X_tr_full.iloc[in_tr], X_tr_full.iloc[in_es]
+        y_tr, y_es = y_tr_full.iloc[in_tr], y_tr_full.iloc[in_es]
 
         model = lgb.LGBMClassifier(**params)
         model.fit(
             X_tr,
             y_tr,
-            eval_set=[(X_va, y_va)],
+            eval_set=[(X_es, y_es)],
             eval_metric="average_precision",
             callbacks=[
                 lgb.early_stopping(config.EARLY_STOPPING_ROUNDS, verbose=False),

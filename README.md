@@ -64,31 +64,46 @@ all significant with meaningful effect sizes.
 
 ## Results (synthetic demonstration data)
 
+**Read this as a pipeline demonstration, not a finding.** The committed data is
+synthetic, and its label is *generated from the same features the model then
+uses* (a weighted score plus noise — see `_citation_propensity` in `data.py`). So
+the model recovering those signals is true *by construction*: it shows the
+plumbing is correct — leakage-safe CV, honest baselines, working SHAP — not that
+these signals drive real AI Overview citations. The substantive, data-driven
+result lives in the [real-dataset variants](#data-leakage-audit-and-the-two-analysis-variants)
+below.
+
 `400 queries · 7,361 (query, URL) pairs · 17.1% cited` — PR-AUC reported as
-per-fold **mean ± std** on the shared GroupKFold splits.
+per-fold **mean ± std** on the shared GroupKFold splits. LightGBM's stopping
+iteration is chosen on a *nested*, query-grouped hold-out carved from inside each
+fold, so the outer validation fold is never used to tune the tree count (see
+`model.py`).
 
 | Model | PR-AUC | ROC-AUC | Precision@k |
 |---|---|---|---|
-| **Gap-Miner (LightGBM)** | 0.572 ± 0.018 | 0.815 | 0.591 |
+| **Gap-Miner (LightGBM)** | 0.564 ± 0.016 | 0.815 | 0.598 |
 | **Logistic Regression** | 0.585 ± 0.015 | 0.828 | 0.612 |
 | Rank-only heuristic | 0.483 ± 0.009 | 0.757 | 0.526 |
 | Random / prevalence | 0.171 | 0.500 | — |
 
-Both learned models beat a *strong* rank-only heuristic by **~10 PR-AUC points**
-and lift per-query precision@k. On this synthetic data the label is close to
-linear in the engineered features, so logistic regression is very competitive;
-gradient boosting's edge typically grows with the non-linear interactions present
-in real citation data. LightGBM is carried forward for SHAP because tree
-attributions are exact.
+Both learned models clear a *strong* rank-only heuristic — by ~8 PR-AUC points
+for LightGBM, ~10 for logistic regression — and lift per-query precision@k.
+Because the synthetic label is close to linear in the engineered features,
+logistic regression is very competitive here; gradient boosting's edge typically
+grows with the non-linear interactions present in real citation data. LightGBM is
+carried forward for SHAP because tree attributions are exact.
 
-### Why the model wins: SHAP
+### SHAP: does the explainer recover the known structure?
 
 ![SHAP summary](reports/figures/shap_summary.png)
 
-The top drivers of citation are **query↔passage semantic match**, **content
-structure** (schema / FAQ / lists & tables), and **domain citation history** — on
-top of, not instead of, ranking position. That is the GEO thesis made measurable:
-*structured, on-topic pages get cited beyond what their SERP position predicts.*
+On synthetic data this is a *sanity check on the explainer*, not evidence about
+the world: TreeSHAP should surface the signals the generator actually used, and
+it does — **query↔passage semantic match**, **content structure** (schema / FAQ /
+lists & tables), and **domain citation history**, on top of ranking position. The
+same SHAP machinery applied to the real-data variants is what turns the GEO
+thesis — *structured, on-topic pages get cited beyond what their SERP position
+predicts* — from folklore into a measurable, auditable claim.
 
 ![Precision-Recall](reports/figures/pr_curve.png)
 
@@ -254,14 +269,15 @@ clean:
 
 ```bash
 pip install -e ".[dev]"
-ruff check .        # lint (pyflakes, isort, pyupgrade, bugbear) — passes
+ruff check .        # lint: E/F/I/UP/B — passes (notebooks exempt cell idioms, see config)
 ruff format .       # formatting
 deptry .            # unused/missing dependencies — passes
 pre-commit install  # run all checks automatically on every commit
 ```
 
-Config lives in `pyproject.toml` (`[tool.ruff]`, `[tool.deptry]`) and
-`.pre-commit-config.yaml`.
+Config lives in `pyproject.toml` (`[tool.ruff]`, plus
+`[tool.ruff.lint.per-file-ignores]` for notebook cell idioms, and
+`[tool.deptry]`) and `.pre-commit-config.yaml`.
 
 ## Feature set
 

@@ -49,6 +49,14 @@ target-version = "py310"
 select = ["E", "F", "I", "UP", "B"]
 ignore = ["E501"]  # line length is handled by the formatter
 
+[tool.ruff.lint.per-file-ignores]
+# Notebooks legitimately use cell-level idioms ruff would otherwise flag: a
+# leading `%matplotlib` magic pushes imports down the cell (E402), semicolons
+# suppress cell output / group setup lines (E702), and imports are grouped for
+# teaching flow rather than strict isort order (I001). These are notebook
+# conventions, not defects -- the package, scripts, and tests are linted in full.
+"*.ipynb" = ["E402", "E702", "I001"]
+
 [tool.deptry]
 known_first_party = ["aio_gap_miner"]
 
