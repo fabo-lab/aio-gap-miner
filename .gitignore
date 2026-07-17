@@ -44,3 +44,5 @@ data/*.db
 .idea/
 .vscode/
 *.swp
+collect_log.txt
+collect_log*.txt
