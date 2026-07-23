@@ -41,8 +41,8 @@ GROUP_COL: str = "query_id"  # rows are grouped by query for leakage-safe CV
 NUMERIC_FEATURES: list[str] = [
     "organic_rank",
     "rank_reciprocal",  # engineered: 1 / organic_rank
-    # "domain_rating",  # REMOVED: computed from the label / no variance - see the leakage audit in the README
-    # "page_authority",  # REMOVED: computed from the label / no variance - see the leakage audit in the README
+    "domain_rating",
+    "page_authority",
     "word_count",
     "has_schema",
     "num_lists_tables",
@@ -54,7 +54,7 @@ NUMERIC_FEATURES: list[str] = [
     "num_entities_matched",
     "readability_score",
     "is_https",
-    # "domain_citation_rate",  # REMOVED: computed from the label / no variance - see the leakage audit in the README
+    "domain_citation_rate",
     "is_forum",
     "is_video",
 ]

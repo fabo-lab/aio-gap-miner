@@ -1,0 +1,17 @@
+section,setting,model,null,null_sd,margin,pooled_ap,per_query_ap,precision_at_3,error,mean_pred,mean,sd,odds_ratio,p_naive,p_cluster_url,p_cluster_domain
+floor,grouped by query,0.525,0.382,0.006,0.142,,,,,,,,,,,
+floor,grouped by domain,0.347,0.31,0.016,0.037,,,,,,,,,,,
+floor,double-blocked,0.31,0.312,0.04,-0.002,,,,,,,,,,,
+metrics,Random (prevalence),,,,,0.29,0.609,0.493,,,,,,,,
+metrics,Rank-only heuristic,,,,,0.368,0.719,0.647,,,,,,,,
+metrics,Domain identity only (OOF),,,,,0.463,0.728,0.65,,,,,,,,
+metrics,"Content, grouped by query",,,,,0.525,0.745,0.661,,,,,,,,
+metrics,"Content, grouped by domain",,,,,0.347,0.634,0.539,,,,,,,,
+metrics,"Content, double-blocked",,,,,0.31,0.771,0.536,,,,,,,,
+metrics,"Content + rank, double-blocked",,,,,0.336,0.762,0.536,,,,,,,,
+calibration,grouped by query,,,,,,,,0.049,0.281,,,,,,
+calibration,grouped by domain,,,,,,,,0.118,0.218,,,,,,
+holdout,split by query,,,,,,,,,,0.577,0.042,,,,
+holdout,split by domain,,,,,,,,,,0.364,0.053,,,,
+inference,has_schema,,,,,,,,,,,,1.6,6.735440439626684e-07,0.036687243306868594,0.039667608946943954
+inference,has_faq,,,,,,,,,,,,1.61,1.7770585403524764e-10,0.0229733675114947,0.015843341845268134

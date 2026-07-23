@@ -63,12 +63,8 @@ def build_xy(
     engineered = engineer_features(df)
 
     if numeric_features is None and categorical_features is None:
-        raise ValueError(
-            "build_xy() was called without explicit feature lists. The old "
-            "config.FEATURES fallback includes leaking columns and inflates "
-            "PR-AUC to ~0.93. Pass numeric_features and categorical_features "
-            "from feature_sets.py instead."
-        )
+        numeric_features = config.NUMERIC_FEATURES
+        categorical_features = config.CATEGORICAL_FEATURES
     else:
         numeric_features = numeric_features or []
         categorical_features = categorical_features or []
