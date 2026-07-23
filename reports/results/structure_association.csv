@@ -1,0 +1,5 @@
+feature,population,odds_ratio,p_value
+has_schema,ranked pages,1.82,4.696416032155937e-14
+has_schema,AI-Overview searches,1.6,6.684484470708705e-07
+has_faq,ranked pages,1.89,1.7955058618955723e-23
+has_faq,AI-Overview searches,1.61,1.885456289758361e-10

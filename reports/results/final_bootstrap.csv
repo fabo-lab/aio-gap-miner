@@ -1,0 +1,2 @@
+mean_diff,ci_low,ci_high,p_gt_zero,verdict
+0.0497,0.0344,0.0656,1.0,real but small

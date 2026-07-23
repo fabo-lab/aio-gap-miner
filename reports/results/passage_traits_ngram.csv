@@ -1,0 +1,5 @@
+characteristic,reused_rate,control_rate,odds_ratio,p_holm,significant
+has_number,0.68,0.188,9.21,0.0012378635482111905,True
+has_currency,0.2,0.094,2.42,0.4962406015037595,False
+has_percent,0.32,0.0,inf,0.001963630154529155,True
+has_definition_cue,0.0,0.094,0.0,0.4962406015037595,False
