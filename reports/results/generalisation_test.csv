@@ -1,0 +1,16 @@
+features,grouped_by,pr_auc,roc_auc
+content only,query_id,0.523,0.724
+content only,domain,0.343,0.543
+content only,url,0.338,0.557
+content + rank,query_id,0.568,0.754
+content + rank,domain,0.371,0.598
+content + rank,url,0.376,0.611
+page-constant features only,query_id,0.527,0.731
+page-constant features only,domain,0.338,0.555
+page-constant features only,url,0.339,0.56
+query-dependent features only,query_id,0.399,0.609
+query-dependent features only,domain,0.305,0.518
+query-dependent features only,url,0.315,0.522
+query-dependent + rank,query_id,0.441,0.659
+query-dependent + rank,domain,0.363,0.596
+query-dependent + rank,url,0.373,0.602
