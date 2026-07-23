@@ -1,0 +1,6 @@
+finding,all_rows,ranked_only,lift_all,lift_ranked,n_ranked,distorted
+Video pages,0.807,0.158,1.68,0.54,95,True
+Forum pages,0.0,0.0,0.0,0.0,4,False
+Has schema markup,0.504,0.317,1.05,1.09,3726,False
+Has FAQ section,0.519,0.367,1.08,1.26,2047,False
+Uses HTTPS,0.483,0.292,1.0,1.0,4831,False

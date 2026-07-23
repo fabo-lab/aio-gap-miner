@@ -54,35 +54,33 @@ used that instead.*
 
 ## Finding 2 — The model works, and it beats the obvious answer
 
-Two leakage-safe framings (see the audit section below for why there are two):
+All models below are evaluated on **one population** — the 4,857 pages Google
+actually ranks — so the numbers are directly comparable with no caveats.
 
-**Variant A — among pages Google already ranks, which get cited?** (4,857 rows)
+| Model | PR-AUC | ROC-AUC | vs. random |
+|---|---|---|---|
+| Random guessing | 0.291 | 0.500 | 1.00x |
+| Rank-only heuristic ("just trust the ranking") | 0.368 | 0.616 | 1.27x |
+| Logistic Regression (content + rank) | 0.437 | 0.669 | 1.50x |
+| **LightGBM — content signals only** | **0.523** | 0.724 | **1.80x** |
+| **LightGBM — content + rank** | **0.568** | 0.754 | **1.95x** |
 
-| Model | PR-AUC | ROC-AUC |
-|---|---|---|
-| **LightGBM** | **0.583** | 0.760 |
-| Logistic Regression | 0.442 | 0.670 |
-| Rank-only guess | 0.369 | 0.617 |
-| Random guessing | 0.291 | 0.500 |
+The standard SEO assumption is "rank well and you get cited". That scores 0.368.
+**Content signals alone — with the ranking removed entirely — score 0.523.**
+On identical pages, what a page says predicts citation better than where it sits.
 
-**Variant B — what content signals decide it, ignoring rank?** (6,646 rows)
-
-| Model | PR-AUC | ROC-AUC |
-|---|---|---|
-| **LightGBM** | **0.770** | 0.770 |
-| Logistic Regression | 0.658 | 0.666 |
-| Rank-only guess | 0.433 | 0.272 |
-| Random guessing | 0.482 | 0.500 |
-
-The naive assumption in SEO is "rank well and you'll get cited". That baseline
-scores 0.369. The content model scores 0.583 — **content carries real information
-on top of ranking.** In variant B the rank-only baseline scores *below random* on
-ROC-AUC, because many cited pages don't rank in the visible results at all.
+*Note on why one population: an earlier framing kept "cited but not ranked" pages
+(given a placeholder rank of 101) and just dropped the rank feature. That looked
+safe but wasn't — all such rows are cited by construction, and they differ
+systematically (≈9x more likely to be video pages), so the model could identify
+that always-cited subgroup through other features. Evaluated on genuinely ranked
+pages, that variant scored 0.479 — worse than a model trained only on ranked
+pages. It was dropped. See `scripts/run_headline_comparison.py`.*
 
 ![Feature importance](https://github.com/fabo-lab/aio-gap-miner/raw/main/reports/figures/shap_importance_variant_B.png)
 
-Both variants surface the same top drivers: **content depth, topic match to the
-search, readability, and best passage match.**
+Top drivers: **content depth, topic match to the search, readability, and best
+passage match.**
 
 ### Content length isn't linear
 
@@ -97,25 +95,23 @@ line can't represent this.
 
 ## Finding 3 — It holds up under pressure
 
-| Check | Variant A | Variant B |
-|---|---|---|
-| Held-out test (107 unseen searches) | PR-AUC 0.535 | PR-AUC **0.711** |
-| Calibration error (0 = perfect) | 0.131 | **0.042** |
-| Top-4 features shared by all 5 folds | 3/4 | 3/4 |
-| SHAP vs permutation importance agreement | **5/5** | 4/5 |
+| Check | Result |
+|---|---|
+| Held-out test (107 searches never seen in training) | PR-AUC **0.535** vs 0.240 prevalence → **2.23x** |
+| Top-4 features shared by all 5 CV folds | 3 of 4, importances varying under 13% |
+| SHAP vs permutation importance | **5 of 5** top features agree |
+| Calibration error | 0.131 — see below |
 
 ![SHAP stability](https://github.com/fabo-lab/aio-gap-miner/raw/main/reports/figures/hardening_shap_stability.png)
 
-Variant B is **well calibrated** — when it says "70% likely", it's right about 70%
-of the time. Variant A is not (it says 88% when reality is 62%), so B is the one
-to trust for probabilities. Variant A, on the other hand, has perfect agreement
-between two independent importance methods. Both are reported honestly rather
-than picking a winner.
+Two independent importance methods — SHAP and permutation importance — agree on
+all five top features. The story doesn't change depending on how the data is split.
 
-Feature importances vary by under 8% between folds — the story doesn't change
-depending on how the data is split.
-
----
+**One honest weakness:** the model is well *ranked* but not well *calibrated*. It
+ranks pages correctly, but its raw probabilities are optimistic (it says 88% where
+reality is 62%). So the scores should be used to prioritise pages, not read as
+literal probabilities. Calibrating it (e.g. isotonic regression on a held-out set)
+is the obvious next step.
 
 ## Finding 4 — What Google actually lifts, sentence by sentence
 
