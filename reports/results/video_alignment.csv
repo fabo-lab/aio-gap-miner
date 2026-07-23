@@ -1,0 +1,118 @@
+query_id,query,video_id,cited_at_s,duration_s,best_match_s,match_score,gap_s,random_gap_s,unrelated_gap_s,unrelated_score
+q0004,haus schätzen lassen,9580eaI-AkE,118.0,420.0,165.0,1.22,47.0,71.24095137041424,2.0,1.483
+q0005,haus bewerten,LrbE5Wf92TI,2.0,165.0,60.0,0.574,58.0,38.40715587757358,2.0,0.593
+q0006,immobilienwert berechnen,Rptf4MMbBlM,155.0,375.0,90.0,2.138,65.0,121.17670531150463,70.0,0.781
+q0007,hausbewertung,4T2VvGrxics,64.0,270.0,75.0,2.472,11.0,40.52651519005764,11.0,1.923
+q0009,immobilie bewerten lassen,4T2VvGrxics,64.0,270.0,120.0,1.648,56.0,55.41867653991843,4.0,2.309
+q0010,wohnung schätzen lassen,4T2VvGrxics,93.0,270.0,120.0,2.198,27.0,33.96774680302709,27.0,2.198
+q0014,wert einer immobilie ermitteln,LrbE5Wf92TI,2.0,165.0,30.0,0.912,28.0,97.33309029324676,13.0,0.814
+q0016,immobilienwert schätzen,LrbE5Wf92TI,2.0,165.0,0.0,1.424,2.0,30.808212363297002,28.0,1.026
+q0017,marktwert immobilie berechnen,Rptf4MMbBlM,155.0,375.0,75.0,1.707,80.0,107.99686509633847,65.0,2.138
+q0023,schätzung immobilienwert,LrbE5Wf92TI,2.0,165.0,0.0,1.424,2.0,34.372702636714955,28.0,0.684
+q0031,immobilienbewertung kosten,9580eaI-AkE,118.0,420.0,135.0,1.167,17.0,1.1599025431216603,92.0,1.648
+q0032,immobilie wert,LrbE5Wf92TI,2.0,165.0,30.0,1.481,28.0,123.2032155764116,13.0,0.93
+q0033,haus bewerten lassen kosten,9580eaI-AkE,118.0,420.0,105.0,1.348,13.0,175.21854589505529,92.0,1.511
+q0034,verkehrswert wohnung ermitteln,Rptf4MMbBlM,155.0,375.0,120.0,0.809,35.0,50.7982468731343,80.0,1.838
+q0039,haus schätzen lassen gutachter,4T2VvGrxics,93.0,270.0,120.0,2.198,27.0,165.4475294958309,27.0,1.511
+q0040,gutachter immobilien kosten,f-xvoOYB5zI,393.0,990.0,420.0,1.203,27.0,291.8118262453498,363.0,1.172
+q0041,wertgutachten haus erbschaft kosten,-mXGCDQ12zY,319.0,495.0,150.0,1.155,169.0,271.1253934674353,184.0,0.737
+q0043,hausschätzung kosten,9580eaI-AkE,118.0,420.0,210.0,0.962,92.0,135.56493317409425,28.0,1.172
+q0045,immobilie bewerten lassen kosten,9580eaI-AkE,118.0,420.0,165.0,1.372,47.0,188.4873504114035,118.0,0.651
+q0048,hausbewertung kosten,9580eaI-AkE,118.0,420.0,195.0,1.697,77.0,65.57301160165207,92.0,1.511
+q0050,immobiliengutachter kosten,9580eaI-AkE,118.0,420.0,180.0,1.605,62.0,84.90391680704757,92.0,1.511
+q0057,immobilienschätzung kosten,9580eaI-AkE,118.0,420.0,180.0,1.605,62.0,230.34995898625783,92.0,1.511
+q0060,marktwert wohnung ermitteln,XVJbxVWXt8k,76.0,240.0,0.0,0.555,76.0,136.50841950483363,44.0,0.525
+q0062,immobilienwert schätzen lassen,4T2VvGrxics,93.0,270.0,120.0,1.648,27.0,62.885079219325746,18.0,2.06
+q0065,verkehrswert wohnung berechnen,f-xvoOYB5zI,10.0,990.0,630.0,1.68,620.0,35.36613981910559,575.0,1.364
+q0067,unabhängige immobilienbewertung,9580eaI-AkE,118.0,420.0,210.0,1.648,92.0,206.68870313125058,92.0,1.786
+q0069,hedonistische schätzung,g1EL1Y_p-Ic,4.0,270.0,0.0,1.26,4.0,226.93578467408966,191.0,0.696
+q0073,kosten wertgutachten haus,TzVR5ww9eaM,40.0,255.0,30.0,2.61,10.0,56.93218738498737,35.0,0.781
+q0078,kosten immobilienbewertung,9580eaI-AkE,118.0,420.0,210.0,1.099,92.0,148.98746659104808,28.0,1.042
+q0084,wert von immobilie ermitteln,gU7GFsBMVcE,241.0,540.0,120.0,1.54,121.0,153.1667875357142,151.0,2.268
+q0087,anonyme immobilienbewertung,XVJbxVWXt8k,76.0,240.0,105.0,0.768,29.0,25.718312614842958,44.0,0.394
+q0091,wohnungswert schätzen lassen,LrbE5Wf92TI,2.0,165.0,90.0,0.824,88.0,113.80035172066097,43.0,0.459
+q0092,mein haus bewerten,LrbE5Wf92TI,2.0,165.0,0.0,0.831,2.0,9.781414080460474,103.0,1.134
+q0095,wohnung bewerten lassen kosten,9580eaI-AkE,118.0,420.0,225.0,0.762,107.0,46.12176775679927,103.0,0.508
+q0106,kurzgutachten haus kosten,9580eaI-AkE,118.0,420.0,210.0,2.06,92.0,49.37095261999008,32.0,0.915
+q0107,gutachten immobilienwert,6y_6D7eIBRg,279.0,1065.0,300.0,0.649,21.0,8.494435525256051,471.0,0.915
+q0111,verkehrswert eigentumswohnung ermitteln,Rptf4MMbBlM,155.0,375.0,270.0,1.778,115.0,103.06073441249242,70.0,1.172
+q0115,verkehrswert haus schätzen,f-xvoOYB5zI,393.0,990.0,615.0,1.604,222.0,284.7681084799758,222.0,1.737
+q0128,immobilienbewertung für makler,LrbE5Wf92TI,2.0,165.0,0.0,1.424,2.0,35.79293187407722,88.0,0.824
+q0129,wertgutachten grundstück,lDqUowuQw5M,180.0,855.0,90.0,1.414,90.0,508.3141596593882,315.0,1.459
+q0130,immobilienbewertung schenkung,k20NWUux7jQ,307.0,915.0,285.0,1.203,22.0,62.017098482232,278.0,1.386
+q0131,wohnung wert schätzen lassen,LrbE5Wf92TI,2.0,165.0,15.0,1.279,13.0,148.66746049061493,73.0,0.693
+q0143,grundstücke bewerten,m8f0Gxi9vhw,8.0,1050.0,135.0,0.915,127.0,912.1860077963023,637.0,0.937
+q0146,verkehrswertgutachten haus,_aFi6lxlgzY,58.0,480.0,270.0,0.971,212.0,44.06074114598749,107.0,1.143
+q0147,haus schätzen wert,gU7GFsBMVcE,241.0,540.0,300.0,0.802,59.0,27.35877342724129,61.0,0.894
+q0153,verkehrswertgutachten haus kosten,9580eaI-AkE,118.0,420.0,120.0,1.618,2.0,74.71777808670748,92.0,1.099
+q0156,immobilienbewertung makler,LrbE5Wf92TI,2.0,165.0,0.0,1.305,2.0,21.039002721708542,88.0,0.549
+q0158,öffentlich bestellter und vereidigter sachverständiger immobilien münchen,39Jvw3IMwtA,49.0,150.0,30.0,1.429,19.0,31.846593450093565,41.0,1.278
+q0160,immobilie bewerten erbschaft,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,239.33981860500387,398.0,1.206
+q0162,grundstücke schätzen lassen,9580eaI-AkE,118.0,420.0,105.0,1.348,13.0,49.74821215896685,13.0,1.348
+q0166,immobilienbewertung im erbfall,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,606.2751268030088,8.0,1.249
+q0169,wertermittlung immobilie kosten,LrbE5Wf92TI,2.0,165.0,30.0,1.026,28.0,82.07183845661665,88.0,0.687
+q0171,verkehrswertgutachten erbschaft,L6TK5Y_PWfw,26.0,300.0,120.0,1.644,94.0,200.73464726012133,94.0,1.151
+q0173,hausschätzung erbe,-mXGCDQ12zY,142.0,495.0,270.0,2.03,128.0,66.34354692261077,83.0,0.48
+q0180,immobilienbewertung vor ort,LrbE5Wf92TI,2.0,165.0,30.0,1.254,28.0,128.69309511988908,88.0,1.099
+q0183,neutrale immobilienbewertung,LrbE5Wf92TI,2.0,165.0,105.0,0.945,103.0,96.40749007077568,28.0,1.368
+q0194,immobilie bewerten kosten,9580eaI-AkE,118.0,420.0,120.0,1.483,2.0,42.280100332745434,92.0,1.511
+q0204,aktuellen verkehrswert ermitteln,LrbE5Wf92TI,2.0,165.0,0.0,1.068,2.0,85.30386694135761,2.0,0.593
+q0205,wert haus schätzen lassen,9580eaI-AkE,118.0,420.0,210.0,1.511,92.0,243.5274749384892,92.0,1.923
+q0208,haus bewerten gutachter,9580eaI-AkE,118.0,420.0,300.0,1.325,182.0,167.7190323077378,92.0,1.786
+q0215,haus immobilienbewertung,4T2VvGrxics,64.0,270.0,165.0,1.648,101.0,120.0617996371752,71.0,1.556
+q0217,immobilienbewertung bei schenkung,k20NWUux7jQ,307.0,915.0,285.0,1.203,22.0,380.05318662632294,7.0,0.944
+q0222,immobilienbewertung ohne kontaktdaten,XVJbxVWXt8k,76.0,240.0,90.0,1.143,14.0,5.64211352745086,31.0,0.63
+q0224,immobilienbewertung internet,LrbE5Wf92TI,2.0,165.0,30.0,0.684,28.0,69.73626636040233,13.0,1.279
+q0229,wertermittlung haus kosten,9580eaI-AkE,118.0,420.0,180.0,1.313,62.0,116.6369672372737,28.0,1.042
+q0233,eigentumswohnung verkehrswert ermitteln,Rptf4MMbBlM,155.0,375.0,270.0,1.778,115.0,209.45803707629284,95.0,0.816
+q0238,wohnung verkehrswert ermitteln,Rptf4MMbBlM,155.0,375.0,90.0,2.004,65.0,35.38062797662195,70.0,0.911
+q0240,kosten für hausschätzung,9580eaI-AkE,118.0,420.0,90.0,1.562,28.0,247.6177993314421,17.0,0.729
+q0244,immobilienbewertung für schenkung,k20NWUux7jQ,307.0,915.0,285.0,1.203,22.0,463.1274535778074,38.0,0.781
+q0246,kosten gutachten immobilie,9580eaI-AkE,118.0,420.0,165.0,1.525,47.0,137.76748880403238,77.0,1.234
+q0247,immobilienbewertung eigentumswohnung,Rptf4MMbBlM,29.0,375.0,120.0,1.753,91.0,111.21769472168049,166.0,1.536
+q0259,gutachter immobilien preis,9580eaI-AkE,118.0,420.0,180.0,1.605,62.0,108.5391926502428,92.0,1.511
+q0271,ermittlung verkehrswert eigentumswohnung,Rptf4MMbBlM,155.0,375.0,270.0,1.778,115.0,189.43506039838837,40.0,1.152
+q0281,immobilienbewertung erbe,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,172.08065676801414,413.0,0.781
+q0286,haus verkehrswert schätzen,f-xvoOYB5zI,393.0,990.0,615.0,1.604,222.0,282.2509519323139,237.0,1.54
+q0287,gutachterkosten immobilienbewertung,9580eaI-AkE,118.0,420.0,180.0,1.167,62.0,251.06318868573737,92.0,1.511
+q0296,wertgutachten einfamilienhaus,9580eaI-AkE,118.0,420.0,120.0,1.348,2.0,17.4300296580153,92.0,1.374
+q0298,kosten immobilienschätzung,9580eaI-AkE,118.0,420.0,105.0,1.618,13.0,250.76403166569702,92.0,1.374
+q0305,kosten für immobiliengutachten,9580eaI-AkE,118.0,420.0,210.0,1.511,92.0,82.02555013149092,92.0,1.511
+q0307,kosten für wertgutachten haus,TzVR5ww9eaM,40.0,255.0,30.0,1.648,10.0,168.08592962212256,5.0,1.64
+q0310,ermittlung immobilienwert erbe,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,456.9632069030071,233.0,1.265
+q0312,wert vom haus schätzen lassen,9580eaI-AkE,118.0,420.0,210.0,1.648,92.0,159.09534555389433,17.0,1.021
+q0313,immobilie bewerten schenkung,k20NWUux7jQ,307.0,915.0,285.0,1.203,22.0,155.90883253867318,158.0,1.18
+q0314,immobilienbewertung 2022,9cVihfikNMI,37.0,645.0,45.0,1.718,8.0,525.719311499991,428.0,0.915
+q0319,immobilienbewertung im internet,LrbE5Wf92TI,2.0,165.0,0.0,0.949,2.0,157.1198794912301,28.0,1.368
+q0326,kosten immobilienbewertung wertgutachten,9580eaI-AkE,118.0,420.0,210.0,1.099,92.0,199.21138258703832,77.0,1.543
+q0329,erbfall immobilienbewertung,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,422.8520874683336,383.0,0.937
+q0335,immobilien gutachten wertermittlung,9580eaI-AkE,118.0,420.0,210.0,1.236,92.0,299.9627297975758,17.0,1.605
+q0355,immobilienwert ermitteln gutachter,LrbE5Wf92TI,2.0,165.0,0.0,0.831,2.0,59.61438291733348,2.0,0.712
+q0356,berechnung verkehrswert eigentumswohnung,Rptf4MMbBlM,155.0,375.0,270.0,1.778,115.0,14.307303021673647,115.0,1.016
+q0359,immobilienbewertung erbfall,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,107.92978238535451,443.0,0.781
+q0361,vereidigter gutachter immobilien kosten,9580eaI-AkE,118.0,420.0,195.0,1.234,77.0,109.16561079703527,62.0,1.605
+q0362,kosten für gutachten immobilienbewertung,9580eaI-AkE,118.0,420.0,165.0,1.982,47.0,21.351812309437662,92.0,1.923
+q0365,eigentumswohnung verkehrswert berechnen,Rptf4MMbBlM,155.0,375.0,270.0,1.778,115.0,152.30343538058992,95.0,0.816
+q0374,ermittlung immobilienwert bei schenkung,k20NWUux7jQ,307.0,915.0,285.0,1.203,22.0,253.1305033081641,293.0,1.364
+q0376,wieviel kostet ein immobiliengutachten,9580eaI-AkE,118.0,420.0,210.0,1.648,92.0,262.27640546257373,13.0,0.809
+q0380,wertgutachten hausverkauf,9580eaI-AkE,118.0,420.0,210.0,1.648,92.0,88.23991304676555,58.0,1.6
+q0388,meine immobilienbewertung,LrbE5Wf92TI,2.0,165.0,15.0,1.86,13.0,43.94874855415025,2.0,0.593
+q0396,kosten gutachter hausschätzung,9580eaI-AkE,118.0,420.0,105.0,1.483,13.0,28.020540904415782,92.0,1.374
+q0410,preis immobiliengutachten,9580eaI-AkE,118.0,420.0,195.0,1.234,77.0,185.80807767000778,92.0,2.06
+q0411,immobilienbewertung für banken,gU7GFsBMVcE,276.0,540.0,315.0,1.854,39.0,35.15429084928593,144.0,0.728
+q0418,immobilienbewertung checkliste,4T2VvGrxics,147.0,270.0,60.0,1.732,87.0,64.8472445585034,12.0,1.414
+q0442,erbrecht immobilienbewertung,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,85.81439476341112,7.0,1.08
+q0443,erbschaft immobilie bewerten,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,388.04387343695765,293.0,0.99
+q0444,ermittlung immobilienwert im erbfall,9cVihfikNMI,37.0,645.0,345.0,1.604,308.0,236.20821184784887,308.0,1.604
+q0452,gutachten immobilienbewertung kosten,9580eaI-AkE,118.0,420.0,180.0,1.605,62.0,244.81143431523333,62.0,1.605
+q0455,gutachter haus bewerten,9580eaI-AkE,118.0,420.0,300.0,1.325,182.0,164.81310986318664,77.0,1.697
+q0465,immobilien verkehrswertgutachten kosten,9580eaI-AkE,118.0,420.0,195.0,1.389,77.0,76.66449411617728,92.0,2.198
+q0472,immobilienbewertung für unbebaute grundstücke und,lDqUowuQw5M,180.0,855.0,150.0,1.313,30.0,442.62261811721123,165.0,1.644
+q0478,immobilienbewertung preise,LrbE5Wf92TI,2.0,165.0,0.0,1.424,2.0,39.02829509684713,43.0,0.459
+q0504,kosten gutachten immobilienbewertung,LrbE5Wf92TI,2.0,165.0,75.0,0.693,73.0,86.48714939520683,2.0,1.305
+q0505,kosten immobiliengutachten einfamilienhaus,9580eaI-AkE,118.0,420.0,225.0,1.524,107.0,59.190288730449765,28.0,1.172
+q0508,ortsgericht immobilienbewertung,zQgPnnVetjs,242.0,390.0,15.0,0.973,227.0,61.57505332362271,28.0,0.487
+q0509,preise für immobiliengutachten,9580eaI-AkE,118.0,420.0,135.0,1.896,17.0,68.11491292245191,77.0,0.463
+q0523,verfahrenswahl immobilienbewertung,m8f0Gxi9vhw,8.0,1050.0,525.0,1.4,517.0,94.80416461168036,7.0,0.617
+q0528,verkehrswert haus ermitteln kosten,XVJbxVWXt8k,76.0,240.0,75.0,0.849,1.0,163.8277924190544,14.0,0.635
+q0531,verkehrswertgutachten nach 194 baugb,zQgPnnVetjs,242.0,390.0,270.0,1.46,28.0,135.90854034105297,107.0,0.743
