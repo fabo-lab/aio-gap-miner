@@ -62,3 +62,4 @@ reports/results/passage_patterns.csv
 reports/results/query_segments.csv
 reports/results/html_position.csv
 tableau/tableau_*.csv
+*.bak
