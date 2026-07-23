@@ -46,3 +46,19 @@ data/*.db
 *.swp
 collect_log.txt
 collect_log*.txt
+
+# Analysis outputs with per-row query/URL/content detail stay private.
+# Aggregate summaries and charts stay public - they are the findings.
+reports/results/serp_features_enriched.csv
+reports/results/paa_questions.csv
+reports/results/paa_clusters.csv
+reports/results/paa_top_questions.csv
+reports/results/aio_text.csv
+reports/results/aio_citations_detail.csv
+reports/results/aio_source_overlap.csv
+reports/results/aio_overlap_summary.csv
+reports/results/passage_matches.csv
+reports/results/passage_patterns.csv
+reports/results/query_segments.csv
+reports/results/html_position.csv
+tableau/tableau_*.csv

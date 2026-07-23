@@ -1,0 +1,7 @@
+characteristic,lifted_rate,not_lifted_rate,ratio
+has_number,0.486,0.151,3.21
+has_currency,0.278,0.027,10.13
+has_percent,0.139,0.015,9.23
+has_formula,0.033,0.012,2.79
+has_definition_cue,0.037,0.07,0.53
+has_list_cue,0.155,0.173,0.9

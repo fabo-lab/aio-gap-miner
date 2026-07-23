@@ -1,0 +1,2 @@
+pr_auc,roc_auc,prevalence,n_test_rows,n_test_queries
+0.5349932995574049,0.7688356263829441,0.2397119341563786,972,107
