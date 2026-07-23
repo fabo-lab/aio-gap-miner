@@ -243,8 +243,24 @@ def main() -> None:
         print(f"NULL replicate {rep + 1}: {count} pairs from mismatched pairings")
 
     null_mean = sum(null_counts) / len(null_counts) if null_counts else 0
-    print(f"\n  Observed {n_obs} vs null {null_mean:.0f}"
+    print(f"\n  Observed {n_obs} vs null mean {null_mean:.1f}"
           + (f"  ->  {n_obs / null_mean:.1f}x above chance" if null_mean else "  ->  null is zero"))
+    if null_counts:
+        import statistics
+        n_ge = sum(1 for c in null_counts if c >= n_obs)
+        # (n_ge + 1) / (B + 1) is the standard estimator - it can never report p = 0,
+        # which would be a claim the number of replicates cannot support.
+        pval = (n_ge + 1) / (len(null_counts) + 1)
+        lo, hi = sorted(null_counts)[int(0.025 * len(null_counts))], \
+            sorted(null_counts)[min(int(0.975 * len(null_counts)), len(null_counts) - 1)]
+        print(f"    null distribution: median {statistics.median(null_counts):.0f}, "
+              f"95% range [{lo}, {hi}], max {max(null_counts)}")
+        print(f"    replicates reaching {n_obs} or more: {n_ge} of {len(null_counts)}")
+        print(f"    permutation p = {pval:.4f}"
+              + ("  (significant)" if pval < 0.05 else "  (not significant)"))
+        if len(null_counts) < 100:
+            print(f"    NOTE: with {len(null_counts)} replicates the smallest attainable")
+            print(f"          p-value is {1 / (len(null_counts) + 1):.3f} - run more for a real one.")
     if null_mean == 0 and n_obs > 0:
         print("  A shared 8-word sequence essentially never happens by chance here,")
         print("  which is what makes this criterion defensible.")
@@ -266,12 +282,16 @@ def main() -> None:
         print("  Sentence characteristics - control drawn from the SAME matched pages")
         print("-" * 74)
         lifted_set = set(observed["source_sentence"])
+        # A SEPARATE generator: the permutation loop above consumes random numbers,
+        # so sharing one would make the control group depend on --permutations.
+        # It did, and it changed the conclusions between runs.
+        ctrl_rng = random.Random(SEED + 1)
         control = []
         for qid, _, domain, src in pairs:
             if (qid, domain) not in matched_pairs:
                 continue
             pool = [s for s in src if s[:400] not in lifted_set]
-            control.extend(rng.sample(pool, k=min(5, len(pool))))
+            control.extend(ctrl_rng.sample(pool, k=min(5, len(pool))))
         lift_prof = pd.DataFrame([profile(s) for s in observed["source_sentence"]])
         ctrl_prof = pd.DataFrame([profile(s) for s in control])
         print(f"  {len(lift_prof)} reused sentences vs {len(ctrl_prof)} control sentences "
