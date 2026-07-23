@@ -1,0 +1,6 @@
+model,pr_auc,roc_auc,lift_vs_random
+Random guessing (prevalence),0.291,0.5,1.0
+Rank-only heuristic,0.368,0.616,1.27
+Logistic Regression (content + rank),0.437,0.669,1.5
+LightGBM - content signals only,0.523,0.724,1.8
+LightGBM - content + rank,0.568,0.754,1.95
